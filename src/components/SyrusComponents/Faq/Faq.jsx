@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import styles from "./Faq.module.css";
-import GuyOnCar from "/GTA/guyOnCar.webp";
+import GuyOnCar from "/STARWARS/AManonStone.webp";
 import TiltImage from "../TiltImage/TiltImage";
 
 function Faq() {
@@ -52,7 +52,7 @@ function Faq() {
     <section ref={sectionRef} className={styles.section} id="faq-section">
       <div className={styles.container}>
         <TiltImage
-          src="/GTA/FAQ_Plate.webp"
+          src="/STARWARS/FAQ_Plate.jpeg"
           alt="FAQs"
           className={styles.tiltPlate}
           galleryRef={sectionRef}

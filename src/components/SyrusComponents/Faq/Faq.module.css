@@ -16,7 +16,7 @@
 /* Faq styles - Stable Smooth Theme */
 .section {
   padding: 80px 0 200px;
-  background-image: url("/GTA/faqs.webp");
+  background-image: url("/STARWARS/faqs.jpg");
   background-size: cover;
   background-position: center center;
   background-attachment: fixed;
@@ -39,10 +39,14 @@
   z-index: 1;
   pointer-events: none;
   opacity: 1 !important;
+  
+  /* This turns the dark/black box completely transparent */
+  mix-blend-mode: lighten;
+  filter: brightness(00.95rem) contrast(120%) saturate(130%) drop-shadow(100%);
+
   -webkit-mask-image: linear-gradient(to top, transparent 0%, black 30%);
   mask-image: linear-gradient(to top, transparent 0%, black 30%);
 }
-
 /* Stable overlay - smooth gradient, no blinking */
 .section::before {
   content: "";
@@ -142,9 +146,9 @@
   font-family: var(--syrus-primary3-font);
   font-weight: bold;
   font-size: clamp(0.88rem, calc(0.52rem + 0.32vw + 0.2vh), 1.1rem);
-  color: #e0e0e0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  letter-spacing: clamp(0.3px, 0.08vw, 1px);
+  color: #c9e2ff; /* Soft sci-fi holographic blue-white */
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 10px rgba(50, 130, 255, 0.3);
+  letter-spacing: clamp(0.5px, 0.1vw, 1.2px);
 }
 
 .icon {
@@ -172,7 +176,7 @@
 .answer {
   padding: 0 clamp(14px, calc(8px + 0.6vw + 0.4vh), 20px)
     clamp(14px, calc(8px + 0.6vw + 0.4vh), 20px);
-  color: #cccccc;
+  color: #c9e2ff;
   line-height: 1.6;
   font-size: clamp(0.78rem, calc(0.5rem + 0.24vw + 0.16vh), 0.95rem);
   font-family: var(--syrus-primary3-font);

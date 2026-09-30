@@ -44,7 +44,7 @@ function Gallery() {
   return (
     <section className={styles.section} id="gallery" ref={galleryRef}>
       <TiltImage
-        src="/GTA/Gallery_Plate.webp"
+        src="/STARWARS/Gallery_Plate.jpeg"
         alt="Gallery"
         className={styles.tiltPlate}
         galleryRef={galleryRef}
