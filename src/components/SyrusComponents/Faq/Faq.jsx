@@ -1,97 +1,95 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
+import SectionHeading from "../SectionHeading/SectionHeading";
+import { ChevronIcon } from "../icons";
 import styles from "./Faq.module.css";
-import GuyOnCar from "/STARWARS/AManonStone.webp";
-import TiltImage from "../TiltImage/TiltImage";
 
-function Faq() {
-  const sectionRef = useRef(null);
-  const faqData = [
-    {
-      question:
-        "I do not have a lot of experience in coding. Can I still join this hackathon?",
-      answer:
-        "Yes, Syrus 7.0 is beginner-friendly. Even if you do not have a lot of experience, you can participate and learn new things.",
-    },
-    {
-      question: "Where can I register for the hackathon?",
-      answer:
-        "Register via the registration links available on SYRUS's official website or through links provided in the emails and WhatsApp messages.",
-    },
-    {
-      question: "What is the required team size to participate?",
-      answer: "The required team size to participate is 2-4 members.",
-    },
-    {
-      question: "Can people from different branches/years form a team?",
-      answer:
-        "Yes, there are no restrictions in forming teams from diverse branches and years. However, all participants must be from VESIT only.",
-    },
-    {
-      question: "Is there any entry fee for the registration?",
-      answer: "No, Syrus is free for all the participants.",
-    },
-    {
-      question: "What is the judging criteria for the hackathon?",
-      answer:
-        "The judging criteria for the hackathon will be based on your innovation and understanding of the problem statement. A detailed document containing the guidelines and judging criteria will be sent to all the registered teams.",
-    },
-    {
-      question: "Are there any particular domains for the hackathon?",
-      answer:
-        "Yes, the hackathon will focus on the following theme: Agentic AI and Open Innovation.",
-    },
-  ];
+const FAQ_DATA = [
+  {
+    question:
+      "I do not have a lot of experience in coding. Can I still join this hackathon?",
+    answer:
+      "Yes, Syrus 7.0 is beginner-friendly. Even if you do not have a lot of experience, you can participate and learn new things.",
+  },
+  {
+    question: "Where can I register for the hackathon?",
+    answer:
+      "Register via the registration links available on SYRUS's official website or through links provided in the emails and WhatsApp messages.",
+  },
+  {
+    question: "What is the required team size to participate?",
+    answer: "The required team size to participate is 2-4 members.",
+  },
+  {
+    question: "Can people from different branches/years form a team?",
+    answer:
+      "Yes, there are no restrictions in forming teams from diverse branches and years. However, all participants must be from VESIT only.",
+  },
+  {
+    question: "Is there any entry fee for the registration?",
+    answer: "No, Syrus is free for all the participants.",
+  },
+  {
+    question: "What is the judging criteria for the hackathon?",
+    answer:
+      "The judging criteria for the hackathon will be based on your innovation and understanding of the problem statement. A detailed document containing the guidelines and judging criteria will be sent to all the registered teams.",
+  },
+  {
+    question: "Are there any particular domains for the hackathon?",
+    answer:
+      "Yes, the hackathon has five tracks: Blockchain, FinTech, Agentic AI, Quantum, and FE Special (only for first-year students).",
+  },
+];
 
-  const [activeIndex, setActiveIndex] = useState(null);
-
-  const toggleFAQ = (index) => {
-    setActiveIndex(activeIndex === index ? null : index);
-  };
+export default function Faq() {
+  const [open, setOpen] = useState(null);
 
   return (
-    <section ref={sectionRef} className={styles.section} id="faq-section">
-      <div className={styles.container}>
-        <TiltImage
-          src="/STARWARS/FAQ_Plate.jpeg"
-          alt="FAQs"
-          className={styles.tiltPlate}
-          galleryRef={sectionRef}
-        />
-        <div className={styles.faqList}>
-          {faqData.map((item, index) => (
-            <div key={index} className={styles.faqItem}>
-              <button
-                onClick={() => toggleFAQ(index)}
-                className={styles.faqButton}
-              >
-                <span className={styles.question}>{item.question}</span>
-                <span
-                  className={`${styles.icon} ${
-                    activeIndex === index ? styles.iconRotated : ""
-                  }`}
+    <section
+      id="faq-section"
+      className="syrus-section"
+      aria-labelledby="faq-title"
+    >
+      <div className="syrus-container">
+        <SectionHeading id="faq-title">faqs</SectionHeading>
+
+        <div className={styles.list} data-reveal>
+          {FAQ_DATA.map((item, i) => {
+            const isOpen = open === i;
+            return (
+              <div key={item.question} className={styles.item}>
+                <h3 className={styles.q}>
+                  <button
+                    type="button"
+                    className={styles.btn}
+                    aria-expanded={isOpen}
+                    aria-controls={`faq-a-${i}`}
+                    id={`faq-q-${i}`}
+                    onClick={() => setOpen(isOpen ? null : i)}
+                  >
+                    <span className={styles.num} aria-hidden="true">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className={styles.text}>{item.question}</span>
+                    <ChevronIcon
+                      className={`${styles.chev} ${isOpen ? styles.chevOpen : ""}`}
+                    />
+                  </button>
+                </h3>
+                <div
+                  id={`faq-a-${i}`}
+                  role="region"
+                  aria-labelledby={`faq-q-${i}`}
+                  className={`${styles.panel} ${isOpen ? styles.panelOpen : ""}`}
                 >
-                  ▼
-                </span>
-              </button>
-              <div
-                className={`${styles.answerWrapper} ${
-                  activeIndex === index ? styles.answerWrapperOpen : ""
-                }`}
-              >
-                <p className={styles.answer}>{item.answer}</p>
+                  <div className={styles.panelInner}>
+                    <p className={styles.a}>{item.answer}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
-      <img
-        src={GuyOnCar}
-        alt=""
-        aria-hidden="true"
-        className={styles.guyOnCar}
-      />
     </section>
   );
 }
-
-export default Faq;

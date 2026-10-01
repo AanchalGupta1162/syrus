@@ -1,79 +1,85 @@
-import React, { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import styles from "./PrizePool.module.css";
-import TiltImage from "../TiltImage/TiltImage";
-import MoneyStar from "/GTA/moneyStar.webp";
 
-function PrizePool() {
-  const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: false, margin: "-100px" });
-  const [displayValue, setDisplayValue] = useState(10000);
+const START = 10000;
+const TARGET = 100000;
+const STEP = 1000;
+const HOLDS = [50000, 70000]; // pause here for a beat
+const TICK_MS = 20;
+const HOLD_MS = 500;
 
-  const startValue = 10000;
-  const targetValue = 100000;
-  const increment = 1000;
+const fmt = (n) => n.toLocaleString("en-IN");
+
+export default function PrizePool() {
+  const ref = useRef(null);
+  const [value, setValue] = useState(START);
 
   useEffect(() => {
-    if (!isInView) {
-      setDisplayValue(startValue);
-      return;
+    const el = ref.current;
+    if (!el) return undefined;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !("IntersectionObserver" in window)) {
+      setValue(TARGET);
+      return undefined;
     }
 
-    let currentValue = startValue;
-    const pauseAtValues = [50000, 70000]; // Values to pause at
-    const normalDelay = 20; // Normal animation speed
-    const pauseDuration = 500; // Pause duration in ms
+    let raf = 0;
+    let started = false;
 
-    const animateValue = () => {
-      if (currentValue < targetValue) {
-        currentValue += increment;
-        setDisplayValue(currentValue);
-
-        // Check if we should pause at this value
-        if (pauseAtValues.includes(currentValue)) {
-          setTimeout(animateValue, pauseDuration);
-        } else {
-          setTimeout(animateValue, normalDelay);
+    const run = () => {
+      let current = START;
+      let last = performance.now();
+      let wait = TICK_MS;
+      const frame = (now) => {
+        if (now - last >= wait) {
+          last = now;
+          current += STEP;
+          setValue(current);
+          if (current >= TARGET) return;
+          wait = HOLDS.includes(current) ? HOLD_MS : TICK_MS;
         }
-      } else {
-        setDisplayValue(targetValue);
-      }
+        raf = requestAnimationFrame(frame);
+      };
+      raf = requestAnimationFrame(frame);
     };
 
-    animateValue();
-  }, [isInView]);
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started) {
+          started = true;
+          run();
+          io.disconnect();
+        }
+      },
+      { threshold: 0.4 },
+    );
+    io.observe(el);
 
-  // Format number with Indian comma style (e.g., 1,50,000)
-  const formatWithCommas = (num) => {
-    return num.toLocaleString("en-IN");
-  };
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 
   return (
-    <section id="prizepool" ref={sectionRef} className={styles.prizeSection}>
-      <TiltImage
-        src="/GTA/Prizepool_Plate.webp"
-        alt="Prize Pool"
-        className={styles.tiltPlate}
-        galleryRef={sectionRef}
-      />
-      <div className={styles.container}>
-        <div className={styles.amountWrapper}>
-          <div className={styles.amount}>
-            <span className={styles.currency}>₹</span>
-            <span>{formatWithCommas(displayValue)}</span>
-          </div>
-          <p className={styles.tagline}>TOTAL WORTH OF PRIZES</p>
-          <p className={styles.perksLine}>INTERNSHIPS • SWAGS • GOODIES</p>
+    <section
+      id="prizepool"
+      className={`syrus-section ${styles.section}`}
+      aria-label="Prize pool"
+    >
+      <div className="syrus-container">
+        <div ref={ref} className={styles.wrap} data-reveal>
+          <span className={styles.kicker}>Total worth of prizes</span>
+          <p className={styles.amount} aria-label="Rupees 1,00,000">
+            <span className={styles.currency} aria-hidden="true">
+              ₹
+            </span>
+            <span aria-hidden="true">{fmt(value)}</span>
+          </p>
+          <p className={styles.perks}>Internships • Swags • Goodies</p>
         </div>
       </div>
-      <img
-        src={MoneyStar}
-        alt=""
-        aria-hidden="true"
-        className={styles.moneyStarArt}
-      />
     </section>
   );
 }
-
-export default PrizePool;

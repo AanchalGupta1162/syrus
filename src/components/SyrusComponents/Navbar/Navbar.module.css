@@ -1,0 +1,225 @@
+/* Top bar: logo left, action buttons right (menu button is fixed on top of it) */
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: var(--syrus-nav-h);
+  background: rgba(var(--syrus-void-rgb), 0.92);
+  border-bottom: 1px solid var(--syrus-seam);
+  transform: translate3d(0, -100%, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.5s var(--syrus-ease-scan), opacity 0.4s ease;
+}
+
+.barOn {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.inner {
+  height: 100%;
+  max-width: var(--syrus-nav-max);
+  margin: 0 auto;
+  padding-inline: var(--syrus-nav-gutter);
+  /* room for the fixed menu button */
+  padding-right: calc(var(--syrus-nav-gutter) + 112px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.logo {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--syrus-font-primary);
+  font-size: 1.55rem;
+  line-height: 1;
+  color: var(--syrus-yellow);
+  text-shadow: 0 0 10px rgba(var(--syrus-yellow-rgb), 0.3);
+}
+
+.actions {
+  display: flex;
+}
+
+/* Menu button: fixed top-right, aligned with the navbar's right edge */
+:global(.syrus-page) button.menuBtn {
+  --cut: 8px;
+  position: fixed;
+  top: calc((var(--syrus-nav-h) - 42px) / 2);
+  right: max(
+    var(--syrus-nav-gutter),
+    calc((100vw - var(--syrus-nav-max)) / 2 + var(--syrus-nav-gutter))
+  );
+  z-index: 60;
+  min-height: 42px;
+  padding: 0 16px;
+  font-size: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, -8px, 0);
+  transition: opacity 0.4s ease, transform 0.4s var(--syrus-ease-scan),
+    color 0.2s ease, background-color 0.2s ease;
+}
+
+:global(.syrus-page) button.menuBtnOn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.menuIcon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+/* Full-screen menu */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  background: rgba(var(--syrus-void-rgb), 0.97);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+  overflow-y: auto;
+}
+
+.overlayOpen {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.overlayTop {
+  flex: none;
+  height: var(--syrus-nav-h);
+  max-width: var(--syrus-nav-max);
+  width: 100%;
+  margin: 0 auto;
+  padding-inline: var(--syrus-nav-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--syrus-seam);
+  position: relative;
+}
+
+.overlayTitle {
+  font-family: var(--syrus-font-primary);
+  font-size: 1.55rem;
+  line-height: 1;
+  color: var(--syrus-yellow);
+}
+
+/* The close button reuses menuBtn styles but sits inside the overlay bar */
+:global(.syrus-page) button.menuBtn.closeBtn {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.nav {
+  flex: 1;
+  width: 100%;
+  max-width: var(--syrus-container);
+  margin: 0 auto;
+  padding: clamp(12px, 4vh, 40px) var(--syrus-gutter) 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: clamp(40px, 6vw, 72px) 1fr;
+  align-items: baseline;
+  width: 100%;
+  padding: clamp(10px, 2vh, 20px) 0;
+  border: 0;
+  border-bottom: 1px solid var(--syrus-seam);
+  background: transparent;
+  text-align: left;
+  color: var(--syrus-bone);
+  cursor: pointer;
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition: color 0.2s ease, opacity 0.5s var(--syrus-ease-scan),
+    transform 0.5s var(--syrus-ease-scan);
+  transition-delay: 0s, 0s, 0s;
+}
+
+.overlayOpen .item {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0s, calc(var(--i) * 0.05s + 0.12s), calc(var(--i) * 0.05s + 0.12s);
+}
+
+.num {
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  color: var(--syrus-holo);
+}
+
+.itemLabel {
+  font-weight: 700;
+  font-size: clamp(1.9rem, 6.5vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: transform 0.25s var(--syrus-ease-scan);
+}
+
+.item:hover,
+.item:focus-visible {
+  color: var(--syrus-yellow);
+}
+
+.item:hover .itemLabel,
+.item:focus-visible .itemLabel {
+  transform: translateX(10px);
+}
+
+@media (max-width: 560px) {
+  .inner {
+    padding-right: calc(var(--syrus-nav-gutter) + 52px);
+  }
+
+  :global(.syrus-page) button.menuBtn {
+    width: 44px;
+    min-height: 44px;
+    top: calc((var(--syrus-nav-h) - 44px) / 2);
+    padding: 0;
+  }
+
+  .menuLabel {
+    display: none;
+  }
+
+  .logo {
+    font-size: 1.35rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .menuBtn,
+  .overlay,
+  .item {
+    transition: none;
+  }
+}

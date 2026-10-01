@@ -1,44 +1,38 @@
-import { useState, useEffect } from "react";
-import ScrollTrigger from "gsap/ScrollTrigger";
+import { useEffect, useState } from "react";
+import { ArrowIcon } from "../icons";
+import { getHeroScrollY, scrollToHero } from "../syrusConfig";
 import styles from "./SyrusScrollToTop.module.css";
 
-function SyrusScrollToTop() {
-  const [isVisible, setIsVisible] = useState(false);
+/** Appears after the hero and returns the visitor to it. */
+export default function SyrusScrollToTop() {
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const sponsorSection = document.getElementById("sponsors");
-    if (!sponsorSection) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting || entry.boundingClientRect.top < 0);
-      },
-      { threshold: 0 },
-    );
-    observer.observe(sponsorSection);
-
-    return () => observer.disconnect();
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      setVisible(window.scrollY > getHeroScrollY() + window.innerHeight * 0.6);
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const scrollToTop = () => {
-    // Find the Hero section's ScrollTrigger and scroll to its end position
-    // (the last frame where the title card with buttons is fully visible)
-    const heroST = ScrollTrigger.getAll().find(
-      (st) => st.trigger && st.pin,
-    );
-    const target = heroST ? heroST.end : 0;
-
-    window.scrollTo(0, target);
-  };
 
   return (
     <button
-      className={`${styles.button} ${isVisible ? styles.visible : ""}`}
-      onClick={scrollToTop}
+      type="button"
+      className={`syrus-btn syrus-btn--ghost ${styles.btn} ${visible ? styles.on : ""}`}
+      onClick={scrollToHero}
+      aria-label="Back to top"
+      tabIndex={visible ? 0 : -1}
     >
-      <span className={styles.arrow}>▲</span>
+      <ArrowIcon dir="up" className={styles.icon} />
     </button>
   );
 }
-
-export default SyrusScrollToTop;

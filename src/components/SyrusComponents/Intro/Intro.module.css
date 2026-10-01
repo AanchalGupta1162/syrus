@@ -1,0 +1,195 @@
+.track {
+  position: relative;
+  z-index: 1;
+  height: 430vh;
+  height: 430svh;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* "A long time ago…" */
+.prologue {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  will-change: opacity, transform;
+}
+
+.prologueText {
+  margin: 0;
+  max-width: 30ch;
+  font-size: clamp(1.15rem, 3vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.6;
+  text-wrap: balance;
+  letter-spacing: 0.04em;
+  color: var(--syrus-holo);
+  animation: prologueIn 1.8s ease 0.3s both;
+}
+
+@keyframes prologueIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Title that shrinks into the distance */
+.title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  margin-top: -0.5em;
+  text-align: center;
+  font-family: var(--syrus-font-primary);
+  font-size: clamp(3rem, 14vw, 10.5rem);
+  line-height: 1;
+  color: var(--syrus-yellow);
+  white-space: nowrap;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* Perspective crawl */
+.crawlWrap {
+  position: absolute;
+  inset: 0;
+  perspective: 480px;
+  perspective-origin: 50% 36%;
+  overflow: hidden;
+  opacity: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 3%, #000 40%);
+  mask-image: linear-gradient(to bottom, transparent 3%, #000 40%);
+  will-change: opacity;
+}
+
+.crawl {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(86vw, 780px);
+  transform-origin: 50% 100%;
+  transform: translateX(-50%) rotateX(26deg) translate3d(0, 120vh, 0);
+  color: var(--syrus-yellow);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 3.3vw, 2.4rem);
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  text-align: center;
+  will-change: transform;
+}
+
+.crawl p {
+  margin: 0 0 1.5em;
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    #ffffff 0%,
+    rgba(190, 236, 252, 0.75) 32%,
+    rgba(var(--syrus-holo-rgb), 0.25) 58%,
+    transparent 80%
+  );
+}
+
+.hero {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--syrus-dim);
+  pointer-events: none;
+}
+
+.hint i {
+  width: 1px;
+  height: 38px;
+  background: linear-gradient(var(--syrus-holo), transparent);
+  transform-origin: top;
+  animation: hintLine 1.8s ease-in-out infinite;
+}
+
+@keyframes hintLine {
+  0% {
+    transform: scaleY(0);
+  }
+  60% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+.skip {
+  position: absolute;
+  right: clamp(16px, 4vw, 40px);
+  bottom: calc(22px + env(safe-area-inset-bottom));
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--syrus-dim);
+  font-family: var(--syrus-font-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.skip:hover {
+  color: var(--syrus-yellow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prologueText {
+    animation: none;
+  }
+  .hint i {
+    animation: none;
+    transform: none;
+  }
+}

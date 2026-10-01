@@ -1,12 +1,125 @@
-/* Hide scrollbar when on the Syrus page */
+/* =====================================================================
+   SYRUS 7.0 — Star Wars theme
+   Everything here is scoped to `.syrus-page` so no other page is affected.
+   Full documentation: syrus7.0-design.md (repository root).
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Fonts (files live in src/assets/fonts/syrus)
+   Primary   : Star Jedi        -> the "Syrus 7.0" title
+   Secondary : Star Jedi Hollow -> section titles
+   Text      : Oxanium          -> everything else
+   --------------------------------------------------------------------- */
+@font-face {
+  font-family: "Star Jedi";
+  src: url("../../assets/fonts/syrus/StarJedi.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Star Jedi Hollow";
+  src: url("../../assets/fonts/syrus/StarJediHollow.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oxanium";
+  src: url("../../assets/fonts/syrus/Oxanium-latin.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Oxanium";
+  src: url("../../assets/fonts/syrus/Oxanium-latin-ext.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ---------------------------------------------------------------------
+   Design tokens
+   --------------------------------------------------------------------- */
+.syrus-page {
+  /* Font roles */
+  --syrus-font-primary: "Star Jedi", "Impact", sans-serif;
+  --syrus-font-secondary: "Star Jedi Hollow", "Impact", sans-serif;
+  --syrus-font-text: "Oxanium", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Surfaces */
+  --syrus-void: #04050a; /* page background */
+  --syrus-hull: #0b0d12; /* section base */
+  --syrus-plate: #12151b; /* panels / cards */
+  --syrus-plate-2: #1a1e26; /* raised panels */
+  --syrus-seam: #2a2f39; /* 1px borders */
+
+  /* Text */
+  --syrus-bone: #e8e2d0; /* body text */
+  --syrus-dim: #8b8f98; /* secondary text */
+  --syrus-white: #ffffff;
+
+  /* Accents */
+  --syrus-yellow: #ffe81f; /* signature (crawl / logo yellow) */
+  --syrus-amber: #e9a415; /* hover / pressed */
+  --syrus-holo: #5fd4f0; /* hologram cyan, data + focus */
+  --syrus-rebel: #ff6b1a; /* highlight */
+  --syrus-saber: #e3262e; /* warnings / errors */
+
+  /* Same colours as r,g,b triplets for rgba(var(--x-rgb), a) */
+  --syrus-void-rgb: 4, 5, 10;
+  --syrus-bone-rgb: 232, 226, 208;
+  --syrus-yellow-rgb: 255, 232, 31;
+  --syrus-holo-rgb: 95, 212, 240;
+  --syrus-rebel-rgb: 255, 107, 26;
+
+  /* Layout */
+  --syrus-nav-h: 60px;
+  --syrus-container: 1240px;
+  --syrus-gutter: clamp(18px, 5vw, 56px);
+  /* The navbar uses a smaller gutter than the content, so it spans more width */
+  --syrus-nav-gutter: clamp(12px, 2.4vw, 32px);
+  --syrus-nav-max: 1680px;
+  --syrus-section-y: clamp(72px, 10vw, 128px);
+
+  /* Motion */
+  --syrus-ease-scan: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --syrus-ease-jump: cubic-bezier(0.7, 0, 0.2, 1);
+
+  /* Base typography */
+  font-family: var(--syrus-font-text);
+  color: var(--syrus-bone);
+  background: var(--syrus-void);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  min-height: 100svh;
+  overflow-x: clip;
+}
+
+/* ---------------------------------------------------------------------
+   Page-level behaviour (hide the scrollbar on this page only)
+   --------------------------------------------------------------------- */
 html:has(.syrus-page),
 html:has(.syrus-page) body {
-  scrollbar-width: none !important; /* Firefox */
-  -ms-overflow-style: none !important; /* IE/Edge */
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  background: #04050a;
 }
 
 html:has(.syrus-page)::-webkit-scrollbar,
-html:has(.syrus-page) body::-webkit-scrollbar {
+html:has(.syrus-page) body::-webkit-scrollbar,
+.syrus-page::-webkit-scrollbar {
   width: 0 !important;
   height: 0 !important;
   display: none !important;
@@ -17,12 +130,213 @@ html:has(.syrus-page) body::-webkit-scrollbar {
   -ms-overflow-style: none !important;
 }
 
-.syrus-page::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
-  display: none !important;
+.syrus-page *,
+.syrus-page *::before,
+.syrus-page *::after {
+  box-sizing: border-box;
+}
+
+.syrus-page a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .syrus-page a:hover {
   text-decoration: none;
+}
+
+:where(.syrus-page button) {
+  font: inherit;
+}
+
+.syrus-page ::selection {
+  background: var(--syrus-yellow);
+  color: var(--syrus-void);
+}
+
+.syrus-page :focus-visible {
+  outline: 2px solid var(--syrus-holo);
+  outline-offset: 3px;
+}
+
+:where(.syrus-page img) {
+  max-width: 100%;
+}
+
+.syrus-page main {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------------------------------------------------------------------
+   Shared building blocks
+   Panels use :where() (zero specificity) so a component's own CSS module
+   can override --cut / --panel-bg. Buttons keep normal
+   specificity: a component that needs a different size/position for a
+   button writes `:global(.syrus-page) button.myClass` (see Navbar).
+   --------------------------------------------------------------------- */
+.syrus-page .syrus-container {
+  width: 100%;
+  max-width: var(--syrus-container);
+  margin: 0 auto;
+  padding-inline: var(--syrus-gutter);
+}
+
+.syrus-page .syrus-section {
+  position: relative;
+  padding-block: var(--syrus-section-y);
+  scroll-margin-top: var(--syrus-nav-h);
+}
+
+/* Chamfered button. Modifiers: --primary (filled) / --ghost (outlined). */
+.syrus-page .syrus-btn {
+  --cut: 10px;
+  --btn-fg: var(--syrus-bone);
+  --btn-bg: var(--syrus-plate);
+  --btn-line: var(--syrus-seam);
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 0 24px;
+  border: 0;
+  background: var(--btn-line);
+  color: var(--btn-fg);
+  font-family: var(--syrus-font-text);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.syrus-page .syrus-btn::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background: var(--btn-bg);
+  clip-path: polygon(
+    calc(var(--cut) - 0.4px) 0,
+    100% 0,
+    100% calc(100% - var(--cut) + 0.4px),
+    calc(100% - var(--cut) + 0.4px) 100%,
+    0 100%,
+    0 calc(var(--cut) - 0.4px)
+  );
+  transition: background-color 0.2s ease;
+}
+
+.syrus-page .syrus-btn--primary {
+  --btn-fg: var(--syrus-void);
+  --btn-bg: var(--syrus-yellow);
+  --btn-line: var(--syrus-yellow);
+}
+
+.syrus-page .syrus-btn--primary:hover {
+  --btn-bg: var(--syrus-amber);
+  --btn-line: var(--syrus-amber);
+}
+
+.syrus-page .syrus-btn--ghost {
+  --btn-fg: var(--syrus-bone);
+  --btn-bg: rgba(var(--syrus-void-rgb), 0.72);
+  --btn-line: rgba(var(--syrus-bone-rgb), 0.42);
+}
+
+.syrus-page .syrus-btn--ghost:hover {
+  --btn-fg: var(--syrus-yellow);
+  --btn-line: var(--syrus-yellow);
+}
+
+.syrus-page .syrus-btn:active {
+  transform: translateY(1px);
+}
+
+.syrus-page .syrus-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Chamfered panel: 1px seam border + dark fill. Children sit above the fill. */
+:where(.syrus-page .syrus-panel) {
+  --cut: 14px;
+  --panel-bg: var(--syrus-plate);
+  --panel-line: var(--syrus-seam);
+  position: relative;
+  isolation: isolate;
+  background: var(--panel-line);
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+}
+
+:where(.syrus-page .syrus-panel)::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background: var(--panel-bg);
+  clip-path: polygon(
+    calc(var(--cut) - 0.4px) 0,
+    100% 0,
+    100% calc(100% - var(--cut) + 0.4px),
+    calc(100% - var(--cut) + 0.4px) 100%,
+    0 100%,
+    0 calc(var(--cut) - 0.4px)
+  );
+}
+
+/* Scroll reveal: elements with [data-reveal] fade up once when seen. */
+.syrus-page [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition: opacity 0.7s var(--syrus-ease-scan),
+    transform 0.7s var(--syrus-ease-scan);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.syrus-page [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.syrus-page .syrus-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syrus-page [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
