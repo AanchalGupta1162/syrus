@@ -1,98 +1,95 @@
-import { useRef } from "react";
-
-import Gallery_24_3 from "/Gallery/Syrus_24/Gallery_3.webp";
-import Gallery_24_8 from "/Gallery/Syrus_24/Gallery_8.webp";
-import Gallery_24_10 from "/Gallery/Syrus_24/Gallery_10.webp";
-import Gallery_24_12 from "/Gallery/Syrus_24/Gallery_12.webp";
-import Gallery_24_13 from "/Gallery/Syrus_24/Gallery_13.webp";
-import Gallery_24_14 from "/Gallery/Syrus_24/Gallery_14.webp";
-import Gallery_25_1 from "/Gallery/Syrus_25/Gallery_1.webp";
-import Gallery_25_2 from "/Gallery/Syrus_25/Gallery_2.webp";
-import Gallery_25_3 from "/Gallery/Syrus_25/Gallery_3.webp";
-import Gallery_25_4 from "/Gallery/Syrus_25/Gallery_4.webp";
-import Gallery_25_5 from "/Gallery/Syrus_25/Gallery_5.webp";
-import Gallery_25_6 from "/Gallery/Syrus_25/Gallery_6.webp";
-import Gallery_25_7 from "/Gallery/Syrus_25/Gallery_7.webp";
-import Gallery_25_8 from "/Gallery/Syrus_25/Gallery_8.webp";
-import Gallery_25_9 from "/Gallery/Syrus_25/Gallery_9.webp";
-
-import Carousel from "react-multi-carousel";
-import "react-multi-carousel/lib/styles.css";
+import { useCallback, useEffect, useRef, useState } from "react";
+import SectionHeading from "../SectionHeading/SectionHeading";
+import { ArrowIcon } from "../icons";
 import styles from "./Gallery.module.css";
-import TiltImage from "../TiltImage/TiltImage";
 
-function Gallery() {
-  const galleryRef = useRef(null);
-  const responsive = {
-    desktop: {
-      breakpoint: { max: 3000, min: 1024 },
-      items: 3,
-      slidesToSlide: 3,
-    },
-    tablet: {
-      breakpoint: { max: 1024, min: 464 },
-      items: 2,
-      slidesToSlide: 2,
-    },
-    mobile: {
-      breakpoint: { max: 464, min: 0 },
-      items: 1,
-      slidesToSlide: 1,
-    },
+const IMAGES = [
+  ...[3, 8, 10, 12, 13, 14].map((n) => `/Gallery/Syrus_24/Gallery_${n}.webp`),
+  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `/Gallery/Syrus_25/Gallery_${n}.webp`),
+];
+
+/** Native scroll-snap carousel. No autoplay, no JS animation. */
+export default function Gallery() {
+  const trackRef = useRef(null);
+  const [edge, setEdge] = useState({ start: true, end: false });
+
+  const updateEdge = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    setEdge({
+      start: el.scrollLeft <= 4,
+      end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 4,
+    });
+  }, []);
+
+  useEffect(() => {
+    updateEdge();
+    window.addEventListener("resize", updateEdge);
+    return () => window.removeEventListener("resize", updateEdge);
+  }, [updateEdge]);
+
+  const step = (dir) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollBy({
+      left: dir * (el.clientWidth * 0.9),
+      behavior: reduce ? "auto" : "smooth",
+    });
   };
 
   return (
-    <section className={styles.section} id="gallery" ref={galleryRef}>
-      <TiltImage
-        src="/STARWARS/Gallery_Plate.jpeg"
-        alt="Gallery"
-        className={styles.tiltPlate}
-        galleryRef={galleryRef}
-      />
-      <div className={styles.container}>
-        <Carousel
-          swipeable={true}
-          draggable={false}
-          autoPlay={true}
-          arrows={true}
-          responsive={responsive}
-          ssr={true}
-          infinite={true}
-          autoPlaySpeed={6000}
-          keyBoardControl={true}
-          customTransition="transform 700ms ease-in-out"
-          transitionDuration={700}
+    <section
+      id="gallery"
+      className="syrus-section"
+      aria-labelledby="gallery-title"
+    >
+      <div className="syrus-container">
+        <SectionHeading id="gallery-title">gallery</SectionHeading>
+      </div>
+
+      <div className={styles.frame} data-reveal>
+        <ul
+          ref={trackRef}
+          className={styles.track}
+          onScroll={updateEdge}
+          tabIndex={0}
+          aria-label="Photos from previous Syrus editions"
         >
-          {[
-            { src: Gallery_24_3, alt: "Gallery Image 1" },
-            { src: Gallery_24_8, alt: "Gallery Image 2" },
-            { src: Gallery_24_10, alt: "Gallery Image 3" },
-            { src: Gallery_24_12, alt: "Gallery Image 4" },
-            { src: Gallery_24_13, alt: "Gallery Image 5" },
-            { src: Gallery_24_14, alt: "Gallery Image 6" },
-            { src: Gallery_25_1, alt: "Gallery Image 7" },
-            { src: Gallery_25_2, alt: "Gallery Image 8" },
-            { src: Gallery_25_3, alt: "Gallery Image 9" },
-            { src: Gallery_25_4, alt: "Gallery Image 10" },
-            { src: Gallery_25_5, alt: "Gallery Image 11" },
-            { src: Gallery_25_6, alt: "Gallery Image 12" },
-            { src: Gallery_25_7, alt: "Gallery Image 13" },
-            { src: Gallery_25_8, alt: "Gallery Image 14" },
-            { src: Gallery_25_9, alt: "Gallery Image 15" },
-          ].map((item, index) => (
-            <div key={index} className={styles.imageWrapper}>
+          {IMAGES.map((src, i) => (
+            <li key={src} className={styles.slide}>
               <img
-                className={styles.image}
-                src={item.src}
-                alt={item.alt}
+                src={src}
+                alt={`Syrus hackathon photo ${i + 1}`}
                 loading="lazy"
+                decoding="async"
+                draggable="false"
               />
-            </div>
+            </li>
           ))}
-        </Carousel>
+        </ul>
+
+        <div className={`syrus-container ${styles.controls}`}>
+          <button
+            type="button"
+            className={`syrus-btn syrus-btn--ghost ${styles.arrow}`}
+            onClick={() => step(-1)}
+            disabled={edge.start}
+            aria-label="Previous photos"
+          >
+            <ArrowIcon dir="left" className={styles.icon} />
+          </button>
+          <button
+            type="button"
+            className={`syrus-btn syrus-btn--ghost ${styles.arrow}`}
+            onClick={() => step(1)}
+            disabled={edge.end}
+            aria-label="Next photos"
+          >
+            <ArrowIcon dir="right" className={styles.icon} />
+          </button>
+        </div>
       </div>
     </section>
   );
 }
-
-export default Gallery;

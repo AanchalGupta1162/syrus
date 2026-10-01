@@ -1,0 +1,43 @@
+.head {
+  margin-bottom: clamp(32px, 5vw, 56px);
+}
+
+.center {
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--syrus-font-secondary);
+  font-weight: 400;
+  font-size: clamp(2rem, 6.4vw, 3.75rem);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  color: var(--syrus-yellow);
+  text-shadow: 0 0 14px rgba(var(--syrus-yellow-rgb), 0.28);
+}
+
+/* thin holo line with corner ticks */
+.rule {
+  position: relative;
+  display: block;
+  width: min(300px, 70%);
+  height: 9px;
+  margin-top: 18px;
+  border-left: 1px solid var(--syrus-holo);
+  border-right: 1px solid var(--syrus-holo);
+}
+
+.center .rule {
+  margin-inline: auto;
+}
+
+.rule::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--syrus-holo), rgba(var(--syrus-holo-rgb), 0.15));
+}

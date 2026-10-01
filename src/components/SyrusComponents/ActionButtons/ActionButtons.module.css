@@ -1,0 +1,57 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.unstop {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+  background: #fff;
+}
+
+/* Navbar: tighter buttons, icon-only on small phones */
+.compact {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+:global(.syrus-page) .compact :global(.syrus-btn) {
+  min-height: 42px;
+  padding: 0 16px;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 560px) {
+  .compact .label {
+    display: none;
+  }
+
+  :global(.syrus-page) .compact :global(.syrus-btn) {
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .row:not(.compact) {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  :global(.syrus-page) .row:not(.compact) :global(.syrus-btn) {
+    width: min(100%, 280px);
+  }
+}
