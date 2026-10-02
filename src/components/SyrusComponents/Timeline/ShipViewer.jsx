@@ -7,7 +7,7 @@ import styles from "./ShipViewer.module.css";
  * 3D starship viewer. Shows the model for build step `index` and plays a
  * scan-wipe when the step changes. Loaded lazily by Timeline.jsx.
  */
-export default function ShipViewer({ steps, index }) {
+export default function ShipViewer({ steps, index, galaxy }) {
   const hostRef = useRef(null);
   const sceneRef = useRef(null);
   const indexRef = useRef(index);
@@ -55,18 +55,9 @@ export default function ShipViewer({ steps, index }) {
       className={styles.viewer}
       onPointerDown={() => setTouched(true)}
       role="img"
-      aria-label={`Interactive 3D model of the Syrus starship, build step ${index + 1} of ${steps.length}: ${steps[index].label}. Drag to rotate.`}
+      aria-label={`Interactive 3D model of the Syrus starship, build step ${index + 1} of ${steps.length}: ${steps[index].label}, in ${galaxy.name}. Drag to rotate.`}
     >
       <div ref={hostRef} className={styles.host} />
-
-      <div className={styles.caption} aria-hidden="true">
-        <span className={styles.kicker}>
-          Build {String(index + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}
-        </span>
-        <span key={index} className={styles.label}>
-          {steps[index].label}
-        </span>
-      </div>
 
       {!failed && status.loading && (
         <span className={styles.loading} aria-hidden="true">
