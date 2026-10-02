@@ -2,33 +2,21 @@
  * Plain-three.js scene for the timeline starship (no React in here).
  *
  *  - Shows one of the 10 build-step models at a time.
- *  - Changing step plays a "scan" wipe along the hull: the new model is
- *    revealed behind a moving holo plane while the old one is clipped away,
- *    so the ship visibly gets built (or un-built when scrolling back up).
+ *  - Changing step crossfades to the next model (the new one fades in and grows
+ *    in slightly), so each added part is clearly noticeable.
  *  - Auto-rotates by orbiting the camera; the visitor can drag to rotate.
  *    Zoom is off and touch uses `pan-y`, so the page always keeps scrolling.
  *  - Renders only while visible, DPR capped, models are loaded on demand.
  */
 import {
   ACESFilmicToneMapping,
-  AdditiveBlending,
-  CircleGeometry,
   DirectionalLight,
-  DoubleSide,
-  EdgesGeometry,
   Box3,
   HemisphereLight,
-  LineBasicMaterial,
-  LineSegments,
   MathUtils,
-  Mesh,
-  MeshBasicMaterial,
   Object3D,
   PerspectiveCamera,
   PMREMGenerator,
-  Plane,
-  PlaneGeometry,
-  RingGeometry,
   Scene,
   SRGBColorSpace,
   Sphere,
@@ -40,8 +28,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
 const HOLO = 0x5fd4f0;
-const PASS_ALL = 1e5; // clip-plane constant that never clips anything
-const WIPE_MS = 1100;
+const FADE_MS = 750;
 const FOV = 30;
 
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -133,30 +120,9 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
     }, 2200);
   });
 
-  /* ---------- scan plane (the glowing wipe front) ---------- */
-  const scanFill = new Mesh(
-    new PlaneGeometry(1, 1),
-    new MeshBasicMaterial({
-      color: HOLO,
-      transparent: true,
-      opacity: 0,
-      side: DoubleSide,
-      depthWrite: false,
-      blending: AdditiveBlending,
-    }),
-  );
-  const scanEdge = new LineSegments(
-    new EdgesGeometry(new PlaneGeometry(1, 1)),
-    new LineBasicMaterial({ color: HOLO, transparent: true, opacity: 0, depthWrite: false }),
-  );
-  scanFill.rotation.y = Math.PI / 2;
-  scanEdge.rotation.y = Math.PI / 2;
-  scanFill.visible = scanEdge.visible = false;
-  scene.add(scanFill, scanEdge);
-
   /* ---------- state ---------- */
   const loader = new GLTFLoader();
-  const models = new Map(); // index -> { root, plane }
+  const models = new Map(); // index -> { root, mats, pos, scale }
   const pending = new Map(); // index -> Promise
   let current = -1; // index fully shown
   let wanted = -1; // index we're heading to
@@ -179,37 +145,6 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
       minY: box.min.y,
     };
     controls.target.copy(center);
-    scanFill.scale.set(1, bounds.radius * 0.95, bounds.radius * 0.8);
-    scanEdge.scale.copy(scanFill.scale);
-    scanFill.position.set(0, center.y, center.z);
-    scanEdge.position.copy(scanFill.position);
-
-    // Hologram base: two thin rings and a faint disc under the ship.
-    const baseY = box.min.y - 2.5;
-    const ringMat = (o) =>
-      new MeshBasicMaterial({
-        color: HOLO,
-        transparent: true,
-        opacity: o,
-        side: DoubleSide,
-        depthWrite: false,
-        blending: AdditiveBlending,
-      });
-    const r = bounds.radius;
-    const rings = [
-      [r * 0.98, r * 0.986, 0.55],
-      [r * 0.68, r * 0.684, 0.3],
-    ];
-    rings.forEach(([a, b, o]) => {
-      const m = new Mesh(new RingGeometry(a, b, 128), ringMat(o));
-      m.rotation.x = -Math.PI / 2;
-      m.position.set(center.x, baseY, center.z);
-      scene.add(m);
-    });
-    const disc = new Mesh(new CircleGeometry(r * 0.98, 64), ringMat(0.035));
-    disc.rotation.x = -Math.PI / 2;
-    disc.position.set(center.x, baseY - 0.05, center.z);
-    scene.add(disc);
 
     // Start from a pleasant 3/4 view.
     const az = MathUtils.degToRad(38);
@@ -248,29 +183,32 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
   ro.observe(container);
 
   /* ---------- loading ---------- */
-  function load(i) {
+  // `quiet` loads (background prefetch) never show the "Loading" badge. Only
+  // models the visitor is actually waiting on are tracked in `blocking`.
+  const blocking = new Set();
+  function load(i, quiet = false) {
     if (models.has(i)) return Promise.resolve(models.get(i));
+    if (!quiet && !blocking.has(i)) {
+      blocking.add(i);
+      emit({ loading: true });
+    }
     if (pending.has(i)) return pending.get(i);
-    emit({ loading: true });
     const p = loader
       .loadAsync(steps[i].file)
       .then((gltf) => {
         if (disposed) return null;
         const root = gltf.scene;
-        const plane = new Plane(new Vector3(1, 0, 0), PASS_ALL);
+        const mats = new Set();
         root.traverse((o) => {
           if (o.isMesh || o.isLine || o.isLineSegments) {
-            const mats = Array.isArray(o.material) ? o.material : [o.material];
-            mats.forEach((m) => {
-              m.clippingPlanes = [plane];
-            });
+            (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => mats.add(m));
           }
         });
         root.visible = false;
         scene.add(root);
         root.updateMatrixWorld(true);
         if (!bounds) applyBounds(new Box3().setFromObject(root));
-        const model = { root, plane };
+        const model = { root, mats: [...mats], pos: root.position.clone(), scale: root.scale.x };
         models.set(i, model);
         emit({ error: false });
         return model;
@@ -284,30 +222,53 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
       })
       .finally(() => {
         pending.delete(i);
-        if (!pending.size) emit({ loading: false });
+        blocking.delete(i);
+        emit({ loading: blocking.size > 0 });
       });
     pending.set(i, p);
     return p;
   }
 
-  function setPlane(model, keepLowSide, front) {
-    // keepLowSide: keep x <= front. Otherwise keep x >= front.
-    if (keepLowSide) {
-      model.plane.normal.set(-1, 0, 0);
-      model.plane.constant = front;
-    } else {
-      model.plane.normal.set(1, 0, 0);
-      model.plane.constant = -front;
+  // Once the first model is up, pull in the rest two at a time so every later
+  // step is already in memory (steps 8-10 are 1-2 MB each).
+  let preloading = false;
+  function preloadAll() {
+    if (preloading) return;
+    preloading = true;
+    const queue = steps.map((_, k) => k).filter((k) => !models.has(k) && !pending.has(k));
+    const worker = async () => {
+      while (queue.length && !disposed) await load(queue.shift(), true);
+    };
+    worker();
+    worker();
+  }
+
+  // Fade a whole model. Materials only go transparent while fading, so a settled
+  // ship renders as a normal opaque model.
+  function setFade(model, o) {
+    for (const m of model.mats) {
+      m.transparent = o < 1;
+      m.opacity = o;
     }
+  }
+
+  // Grow the incoming model slightly about the ship's centre (s = 1 is settled).
+  function setGrow(model, s) {
+    model.root.scale.setScalar(model.scale * s);
+    model.root.position.copy(model.pos);
+    if (bounds) model.root.position.addScaledVector(bounds.center, 1 - s);
   }
 
   function finishTransition() {
     if (!transition) return;
     const { from, to } = transition;
-    if (from) from.root.visible = false;
-    to.plane.normal.set(1, 0, 0);
-    to.plane.constant = PASS_ALL;
-    scanFill.visible = scanEdge.visible = false;
+    if (from && from !== to) {
+      from.root.visible = false;
+      setFade(from, 1);
+    }
+    setFade(to, 1);
+    setGrow(to, 1);
+    to.root.visible = true;
     current = transition.toIndex;
     transition = null;
   }
@@ -315,41 +276,36 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
   function begin(i, model) {
     finishTransition();
     const from = current >= 0 ? models.get(current) : null;
+    if (from === model) {
+      // Already showing this model (a move to a stop whose model was still loading,
+      // then back again). Nothing to fade between, and it must stay visible.
+      setFade(model, 1);
+      setGrow(model, 1);
+      model.root.visible = true;
+      current = i;
+      return;
+    }
     if (!from || reduceMotion) {
       if (from) from.root.visible = false;
-      model.plane.normal.set(1, 0, 0);
-      model.plane.constant = PASS_ALL;
+      setFade(model, 1);
+      setGrow(model, 1);
       model.root.visible = true;
       current = i;
       return;
     }
     model.root.visible = true;
-    transition = {
-      from,
-      to: model,
-      toIndex: i,
-      forward: i > current,
-      t0: performance.now(),
-    };
-    scanFill.visible = scanEdge.visible = true;
-    // Make sure the first frame already has the right clipping.
+    transition = { from, to: model, toIndex: i, t0: performance.now() };
+    // Make sure the first frame already has the right fade.
     updateTransition(transition.t0);
   }
 
   function updateTransition(now) {
-    if (!transition || !bounds) return;
-    const p = Math.min(1, (now - transition.t0) / WIPE_MS);
+    if (!transition) return;
+    const p = Math.min(1, (now - transition.t0) / FADE_MS);
     const e = easeInOut(p);
-    const a = bounds.minX - 2;
-    const b = bounds.maxX + 2;
-    const front = transition.forward ? a + (b - a) * e : b - (b - a) * e;
-    // New model sits behind the front, old model is what's ahead of it.
-    setPlane(transition.to, transition.forward, front);
-    setPlane(transition.from, !transition.forward, front);
-    scanFill.position.x = scanEdge.position.x = front;
-    const bell = Math.sin(Math.PI * p);
-    scanFill.material.opacity = 0.22 * bell;
-    scanEdge.material.opacity = 0.95 * bell;
+    setFade(transition.to, e);
+    setFade(transition.from, 1 - e);
+    setGrow(transition.to, 0.94 + 0.06 * e);
     if (p >= 1) finishTransition();
   }
 
@@ -361,8 +317,9 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
       begin(i, model);
       kick();
     });
-    // Warm the cache for the next step so scrolling forward feels instant.
-    if (i + 1 < steps.length) load(i + 1);
+    // Next step first so it's ready, then everything else in the background.
+    if (i + 1 < steps.length) load(i + 1, true);
+    load(i).then(preloadAll);
   }
 
   /* ---------- render loop ---------- */
