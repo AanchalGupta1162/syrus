@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import SectionHeading from "../SectionHeading/SectionHeading";
 import events from "../../../assets/data/timelineEvents";
@@ -6,15 +6,7 @@ import shipModels from "../../../assets/data/shipModels";
 import galaxies from "../../../assets/data/galaxies";
 import BB8 from "./BB8";
 import Starfield from "./Starfield";
-import {
-  SCHEDULE_ROWS,
-  SCHEDULE_ROW_H,
-  bankDegrees,
-  flightDirection,
-  panelRect,
-  placements,
-  rollSeconds,
-} from "./journey";
+import { bankDegrees, cardsRect, flightDirection, placements, rollSeconds } from "./journey";
 import styles from "./Timeline.module.css";
 
 // three.js is only downloaded when the timeline is about to be seen.
@@ -25,9 +17,38 @@ const pad2 = (n) => String(n).padStart(2, "0");
 
 const FLIGHT_EASE = [0.45, 0, 0.2, 1];
 
-// Hovering a date in the schedule jumps there after this short pause, so sweeping
-// the mouse across the list doesn't fire every stop on the way.
-const HOVER_INTENT_MS = 120;
+// How quickly the card column catches up with the scroll position (per second). The
+// column follows the page smoothly instead of snapping from card to card.
+const FOLLOW_RATE = 9;
+
+const clamp01 = (v) => Math.max(0, Math.min(1, v));
+
+// What a card shows, richest first. A card starts at the richest level its height
+// allows (see startLevel) and, if its text still doesn't fit once laid out, steps down
+// the list until nothing is clipped. Titles always get up to two lines.
+const WIDE_LEVELS = [
+  { meta: true, lines: 3 },
+  { meta: true, lines: 2 },
+  { meta: true, lines: 1 },
+  { meta: true, lines: 0 },
+  { meta: false, lines: 0 },
+];
+const STACKED_LEVELS = [
+  { meta: false, lines: 1 },
+  { meta: false, lines: 0 },
+];
+
+// Where a card starts, from its height (px) with one-line titles. If a title wraps and
+// the text no longer fits, the clip check below steps every card down a level.
+const startLevel = (cards) => {
+  const h = cards.cardH;
+  if (cards.stacked) return h >= 84 ? 0 : 1;
+  if (h >= 172) return 0;
+  if (h >= 153) return 1;
+  if (h >= 134) return 2;
+  if (h >= 109) return 3;
+  return 4;
+};
 
 export default function Timeline() {
   const pinRef = useRef(null);
@@ -44,7 +65,15 @@ export default function Timeline() {
   const [shown, setShown] = useState(0);
   const [mountViewer, setMountViewer] = useState(false);
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const hoverTimer = useRef(0);
+  // Extra steps down the detail list that were needed to stop text being clipped.
+  const [fit, setFit] = useState({ key: "", extra: 0 });
+  const [fontsTick, setFontsTick] = useState(0);
+  const reelRef = useRef(null);
+  const thumbRef = useRef(null);
+  const cardRefs = useRef([]);
+  // c: which card is in the centre slot, as a fraction (2.5 = halfway from card 2 to 3).
+  const reel = useRef({ cur: 0, target: 0, raf: 0, last: 0, ready: false });
+  const geom = useRef({ step: 0, h: 0, cardH: 0 });
 
   // The stage is sized to fit under the heading, so "Timeline" stays on screen
   // while the stage is in use.
@@ -120,6 +149,17 @@ export default function Timeline() {
       if (!m || m.span <= 0) return;
       const p = Math.min(0.9999, Math.max(0, (m.navH - m.r.top) / m.span));
       setActive(Math.floor(p * N));
+      // Card k sits in the centre while p*N is k + 0.5, so the column glides between
+      // cards as you scroll and the centre card flips at the halfway point.
+      const r = reel.current;
+      r.target = Math.max(0, Math.min(N - 1, p * N - 0.5));
+      if (!r.ready) {
+        r.ready = true;
+        r.cur = r.target;
+        paintReel();
+      } else {
+        kickReel();
+      }
     };
     const onScroll = () => {
       if (!ticking) {
@@ -134,9 +174,10 @@ export default function Timeline() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- paintReel / kickReel only read refs
   }, [pinMetrics]);
 
-  // Dots, the schedule and the arrow keys all move by scrolling to that stop's spot,
+  // Dots, the cards and the arrow keys all move by scrolling to that stop's spot,
   // so the timeline always agrees with where the page is.
   const goTo = useCallback(
     (index) => {
@@ -149,20 +190,7 @@ export default function Timeline() {
     [pinMetrics, reduceMotion],
   );
 
-  useEffect(() => () => clearTimeout(hoverTimer.current), []);
-  // Mouse only: touch has no hover, a tap on the row jumps via onClick.
-  const hoverStop = (k, e) => {
-    if (e.pointerType !== "mouse") return;
-    clearTimeout(hoverTimer.current);
-    hoverTimer.current = setTimeout(() => goTo(k), HOVER_INTENT_MS);
-  };
-  const leaveSchedule = () => clearTimeout(hoverTimer.current);
-
   const onKeyDown = (e) => {
-    if (e.target.closest("button")) {
-      // let buttons keep their own arrow-key/focus behaviour except left/right
-      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-    }
     if (e.key === "ArrowRight" || e.key === "ArrowDown") {
       e.preventDefault();
       goTo(active + 1);
@@ -182,7 +210,7 @@ export default function Timeline() {
   }
 
   const measured = size.w > 0;
-  const panel = measured ? panelRect(size.w, size.h) : null;
+  const cards = measured ? cardsRect(size.w, size.h) : null;
   const to = measured ? placements(size.w, size.h, galaxies[active].layout) : null;
   const here = measured ? placements(size.w, size.h, galaxies[shown].layout) : null;
   const anchor = to ? { x: to.star.x / size.w, y: to.star.y / size.h } : { x: 0.6, y: 0.3 };
@@ -196,12 +224,92 @@ export default function Timeline() {
   // The ship leans a little into the turn while it flies, then levels out on arrival.
   const bank = arrived ? 0 : bankDegrees(dir);
   const g = galaxies[active];
-  const ev = events[shown];
-  const isTBA = ev.date === "TBA";
 
-  // The schedule shows three dates at a time and slides so the current one stays
-  // in view (in the middle, except at the very start and end).
-  const winStart = Math.max(0, Math.min(N - SCHEDULE_ROWS, active - 1));
+  const sizeKey = `${size.w}x${size.h}`;
+  const extra = fit.key === sizeKey ? fit.extra : 0;
+  const levels = cards && cards.stacked ? STACKED_LEVELS : WIDE_LEVELS;
+  const levelIdx = cards ? Math.min(levels.length - 1, startLevel(cards) + extra) : 0;
+  const { meta: showMeta, lines } = levels[levelIdx];
+
+  // --- the card column --------------------------------------------------------
+  // Moves in pixels through refs so scrolling never re-renders React. Every card is
+  // placed by its distance d from the centre slot: full strength at d = 0, about 62%
+  // at d = 1 (the card above / below), gone beyond that.
+  reel.current.reduce = Boolean(reduceMotion);
+  geom.current = cards
+    ? { step: cards.cardH + cards.gap, h: cards.h, cardH: cards.cardH, thumb: cards.h }
+    : geom.current;
+
+  function paintReel() {
+    const { step, h } = geom.current;
+    const list = reelRef.current;
+    if (!list || !step) return;
+    const c = reel.current.cur;
+    list.style.transform = `translate3d(0, ${((1 - c) * step).toFixed(2)}px, 0)`;
+    cardRefs.current.forEach((el, k) => {
+      if (!el) return;
+      const d = Math.abs(k - c);
+      const near = clamp01(1 - d); // 1 in the centre, 0 a full card away
+      el.style.opacity = d >= 2 ? "0" : (1 - 0.38 * Math.min(d, 1) - 0.62 * clamp01(d - 1)).toFixed(3);
+      el.style.transform = `scale(${(1 - 0.045 * (1 - near)).toFixed(4)})`;
+      el.style.setProperty("--a", near.toFixed(3));
+    });
+    const thumb = thumbRef.current;
+    if (thumb) {
+      const size = Math.max(24, h * (3 / N));
+      thumb.style.height = `${size}px`;
+      thumb.style.transform = `translateY(${((h - size) * (c / (N - 1))).toFixed(2)}px)`;
+    }
+  }
+
+  function kickReel() {
+    const r = reel.current;
+    if (r.raf) return;
+    if (r.reduce) {
+      r.cur = r.target;
+      paintReel();
+      return;
+    }
+    r.last = performance.now();
+    const tick = (now) => {
+      const dt = Math.min(0.12, (now - r.last) / 1000);
+      r.last = now;
+      r.cur += (r.target - r.cur) * (1 - Math.exp(-FOLLOW_RATE * dt));
+      if (Math.abs(r.target - r.cur) < 0.0008) r.cur = r.target;
+      paintReel();
+      r.raf = r.cur === r.target ? 0 : requestAnimationFrame(tick);
+    };
+    r.raf = requestAnimationFrame(tick);
+  }
+
+  // Re-place the cards when the stage is measured or resized (before the browser paints).
+  useLayoutEffect(() => {
+    paintReel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- paintReel only reads refs
+  }, [cards && cards.cardH, cards && cards.gap, cards && cards.h]);
+
+  useEffect(() => () => cancelAnimationFrame(reel.current.raf), []);
+
+  // The web font arrives after the first layout and changes how text wraps.
+  useEffect(() => {
+    let live = true;
+    document.fonts?.ready.then(() => live && setFontsTick((n) => n + 1));
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  // Safety net: if any card's text is taller than the card, show a little less
+  // (drop the description lines, then the top row) rather than cut a title off.
+  useLayoutEffect(() => {
+    if (!cards || levelIdx >= levels.length - 1) return;
+    const clipped = cardRefs.current.some((el) => {
+      const inner = el && el.firstElementChild;
+      return inner && inner.scrollHeight > inner.clientHeight + 1;
+    });
+    if (clipped) setFit({ key: sizeKey, extra: extra + 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-measure on size / level / font changes
+  }, [sizeKey, cards && cards.cardH, levelIdx, fontsTick]);
 
   return (
     <section
@@ -232,53 +340,6 @@ export default function Timeline() {
               onKeyDown={onKeyDown}
               aria-label="Timeline. Scroll or use the arrow keys to move between events."
             >
-              {panel && (
-                <nav
-                  className={styles.schedule}
-                  aria-label="Schedule"
-                  style={{ left: panel.x, top: panel.y, width: panel.w, height: panel.h }}
-                  onPointerLeave={leaveSchedule}
-                >
-                  <div className={styles.window} style={{ height: SCHEDULE_ROW_H * SCHEDULE_ROWS }}>
-                    <ol
-                      className={styles.reel}
-                      style={{ transform: `translateY(${-winStart * SCHEDULE_ROW_H}px)` }}
-                    >
-                      {events.map((item, k) => (
-                        <li key={item.title} style={{ height: SCHEDULE_ROW_H }}>
-                          <button
-                            type="button"
-                            className={`${styles.row} ${k === active ? styles.rowActive : ""}`}
-                            tabIndex={k >= winStart && k < winStart + SCHEDULE_ROWS ? 0 : -1}
-                            onPointerEnter={(e) => hoverStop(k, e)}
-                            onClick={() => goTo(k)}
-                            aria-current={k === active ? "step" : undefined}
-                            aria-label={`${item.date}, ${item.title}`}
-                          >
-                            <span className={styles.rowPhase}>{item.phase}</span>
-                            <span
-                              className={`${styles.rowDate} ${item.date === "TBA" ? styles.tba : ""}`}
-                            >
-                              {item.date}
-                            </span>
-                            <span className={styles.rowTitle}>{item.title}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                  <div className={styles.thumbTrack} aria-hidden="true">
-                    <span
-                      className={styles.thumb}
-                      style={{
-                        height: `${(SCHEDULE_ROWS / N) * 100}%`,
-                        top: `${(winStart / N) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </nav>
-              )}
-
               {measured && (
                 <motion.div
                   className={styles.ship}
@@ -302,71 +363,57 @@ export default function Timeline() {
                 </motion.div>
               )}
 
-              {measured && (
+              {cards && (
                 <div
-                  className={styles.cardPos}
-                  style={
-                    // The card is as tall as its text. Wide stages centre it on the galaxy;
-                    // narrow ones sit it on the bottom bar and let it grow upwards.
-                    panel
-                      ? {
-                          left: here.card.x,
-                          top: here.card.y + here.card.h / 2,
-                          width: here.card.w,
-                          transform: "translateY(-50%)",
-                        }
-                      : {
-                          left: here.card.x,
-                          bottom: size.h - (here.card.y + here.card.h),
-                          width: here.card.w,
-                        }
-                  }
+                  className={styles.cards}
+                  style={{ left: cards.x, top: cards.y, width: cards.w, height: cards.h }}
                 >
-                  <motion.div
-                    className={`syrus-panel ${styles.card}`}
-                    initial={false}
-                    animate={{ opacity: arrived ? 1 : 0, y: arrived ? 0 : 12 }}
-                    transition={
-                      reduceMotion
-                        ? { duration: 0 }
-                        : { duration: arrived ? 0.45 : 0.2, delay: arrived ? 0.15 : 0 }
-                    }
-                    style={{ pointerEvents: arrived ? "auto" : "none" }}
-                    aria-hidden={!arrived}
-                    aria-live="polite"
-                  >
-                    <div className={styles.cardInner}>
-                      <div key={`meta-${shown}`} className={`${styles.meta} ${styles.reveal}`}>
-                        <span className={styles.phase}>{ev.phase}</span>
-                        <span className={styles.step}>
-                          Stop {pad2(shown + 1)} / {pad2(N)}
-                        </span>
-                      </div>
-                      <div
-                        key={`date-${shown}`}
-                        className={`${styles.date} ${styles.reveal} ${isTBA ? styles.tba : ""}`}
-                        style={{ "--d": "70ms" }}
-                      >
-                        {ev.date}
-                      </div>
-                      <h3
-                        key={`title-${shown}`}
-                        className={`${styles.title} ${styles.reveal}`}
-                        style={{ "--d": "150ms" }}
-                      >
-                        {ev.title}
-                      </h3>
-                      {ev.description && (
-                        <p
-                          key={`desc-${shown}`}
-                          className={`${styles.desc} ${styles.reveal}`}
-                          style={{ "--d": "230ms" }}
-                        >
-                          {ev.description}
-                        </p>
-                      )}
-                    </div>
-                  </motion.div>
+                  <div className={styles.window}>
+                    <ol
+                      ref={reelRef}
+                      className={styles.reel}
+                      style={{ gap: cards.gap }}
+                      aria-label="Event schedule"
+                    >
+                      {events.map((ev, k) => (
+                        <li key={`${ev.date}-${ev.title}`} style={{ height: cards.cardH }}>
+                          <button
+                            type="button"
+                            ref={(el) => {
+                              cardRefs.current[k] = el;
+                            }}
+                            className={`syrus-panel ${styles.card} ${
+                              k === active ? styles.cardActive : ""
+                            }`}
+                            style={{ "--lines": lines }}
+                            tabIndex={Math.abs(k - active) <= 1 ? 0 : -1}
+                            onClick={() => goTo(k)}
+                            aria-current={k === active ? "step" : undefined}
+                          >
+                            <span className={styles.cardInner}>
+                              {showMeta && (
+                                <span className={styles.meta}>
+                                  <span className={styles.phase}>{ev.phase}</span>
+                                  <span className={styles.step}>
+                                    {pad2(k + 1)} / {pad2(N)}
+                                  </span>
+                                </span>
+                              )}
+                              <span className={styles.when}>
+                                <span className={styles.date}>{ev.date}</span>
+                                {ev.time && <span className={styles.time}>{ev.time}</span>}
+                              </span>
+                              <span className={styles.title}>{ev.title}</span>
+                              {lines > 0 && <span className={styles.desc}>{ev.description}</span>}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                  <div className={styles.thumbTrack} aria-hidden="true">
+                    <span ref={thumbRef} className={styles.thumb} />
+                  </div>
                 </div>
               )}
 
@@ -377,7 +424,7 @@ export default function Timeline() {
                     <ol className={styles.rail}>
                       {events.map((e, k) => (
                         <li
-                          key={e.title}
+                          key={`${e.date}-${e.title}`}
                           className={`${styles.stop} ${k < lit ? styles.stopDone : ""} ${
                             k === lit ? styles.stopActive : ""
                           }`}

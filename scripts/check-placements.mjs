@@ -1,8 +1,9 @@
 // Run with: node scripts/check-placements.mjs
-// For a spread of stage sizes and every galaxy layout, the ship and the card must
-// stay inside the stage, clear of the bottom bar (rail + controls) and of each other.
+// For a spread of stage sizes and every galaxy layout, the ship and the column of
+// three timeline cards must stay inside the stage, clear of the bottom bar (BB-8's
+// rail + controls) and of each other, and the galaxy's star must stay in view.
 import galaxies from "../src/assets/data/galaxies.js";
-import { placements, bottomZone, panelRect } from "../src/components/SyrusComponents/Timeline/journey.js";
+import { placements, bottomZone, cardsRect } from "../src/components/SyrusComponents/Timeline/journey.js";
 
 const SIZES = [
   [1500, 800],
@@ -14,8 +15,10 @@ const SIZES = [
   [900, 700],
   [820, 900],
   [768, 700],
+  [412, 780],
   [390, 784],
   [360, 640],
+  [320, 640],
 ];
 
 const errors = [];
@@ -23,33 +26,30 @@ const overlap = (a, b) =>
   a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
 for (const [w, h] of SIZES) {
+  const usable = h - bottomZone(w);
+  const cards = cardsRect(w, h);
+  const at0 = `${w}x${h}`;
+
+  if (cards.x < 0 || cards.y < 0 || cards.x + cards.w > w + 0.5 || cards.y + cards.h > usable + 0.5) {
+    errors.push(`${at0}: card column leaves its area (${JSON.stringify(cards)}) usable=${usable}`);
+  }
+  if (cards.h !== 3 * cards.cardH + 2 * cards.gap) errors.push(`${at0}: column is not exactly three cards tall`);
+  if (cards.cardH < 82) errors.push(`${at0}: cards too short ${cards.cardH}`);
+  if (cards.stacked !== w < 900) errors.push(`${at0}: wrong layout mode`);
+
   for (const [i, g] of galaxies.entries()) {
-    const at = `${w}x${h} galaxy ${i + 1}`;
+    const at = `${at0} galaxy ${i + 1}`;
     const p = placements(w, h, g.layout);
-    const usable = h - bottomZone(w);
-    const inside = (r, name) => {
-      if (r.x < 0 || r.y < 0 || r.x + r.w > w + 0.5 || r.y + r.h > usable + 0.5) {
-        errors.push(`${at}: ${name} leaves its area (${JSON.stringify(r)}) usable=${usable}`);
-      }
-    };
-    inside(p.ship, "ship");
-    inside(p.card, "card");
-    const panel = panelRect(w, h);
-    if (w >= 900 && !panel) errors.push(`${at}: no schedule panel on a wide stage`);
-    if (panel) {
-      if (panel.y < 0 || panel.y + panel.h > h || panel.x + panel.w > w) errors.push(`${at}: panel leaves the stage`);
-      const rail = { x: 0, y: h - bottomZone(w), w: Math.min(560, w - 56) + Math.max(12, Math.min(48, w * 0.03)), h: bottomZone(w) };
-      if (overlap(panel, rail)) errors.push(`${at}: schedule panel overlaps BB-8's rail`);
-      if (overlap(panel, p.ship)) errors.push(`${at}: ship overlaps the schedule panel`);
-      if (overlap(panel, p.card)) errors.push(`${at}: card overlaps the schedule panel`);
-      if (p.star.x + 60 > panel.x) errors.push(`${at}: star hides behind the schedule panel`);
+    if (p.ship.x < 0 || p.ship.y < 0 || p.ship.x + p.ship.w > w + 0.5 || p.ship.y + p.ship.h > usable + 0.5) {
+      errors.push(`${at}: ship leaves its area (${JSON.stringify(p.ship)}) usable=${usable}`);
     }
-    if (overlap(p.ship, p.card)) errors.push(`${at}: ship overlaps card`);
+    if (overlap(p.ship, cards)) errors.push(`${at}: ship overlaps the card column`);
     if (p.ship.w < 120 || p.ship.h < 100) errors.push(`${at}: ship too small ${p.ship.w}x${p.ship.h}`);
-    if (p.card.h < 100) errors.push(`${at}: card too short ${p.card.h}`);
     if (p.star.x < 0 || p.star.x > w || p.star.y < 0 || p.star.y > usable) {
       errors.push(`${at}: star off stage (${p.star.x}, ${p.star.y})`);
     }
+    if (!cards.stacked && p.star.x + 60 > cards.x) errors.push(`${at}: star hides behind the card column`);
+    if (cards.stacked && p.star.y > cards.y) errors.push(`${at}: star is below the top of the card column`);
   }
 }
 
