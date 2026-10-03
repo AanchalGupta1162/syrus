@@ -4,11 +4,11 @@
 }
 
 /* The heading and the stage are one unit that pins under the nav bar and holds the
-   screen for a short stretch of scrolling (the extra height below), then releases
-   together, so "Timeline" is never left floating over an empty gap. */
+   screen while you scroll through it: every ~34% of a screen of scrolling moves to the
+   next stop. Then it releases together, so "Timeline" is never left floating. */
 .pinWrap {
-  height: calc(100svh - var(--syrus-nav-h) + 45svh);
-  min-height: calc(480px + var(--head-h, 0px) + 45svh);
+  height: calc(100svh - var(--syrus-nav-h) + var(--n) * 34svh);
+  min-height: calc(480px + var(--head-h, 0px) + var(--n) * 34svh);
 }
 
 .pinInner {
@@ -20,6 +20,14 @@
 .head {
   padding-top: clamp(16px, 3svh, 36px);
   padding-bottom: clamp(6px, 1.5svh, 14px);
+}
+
+/* The heading is pinned with the stage, so it never waits for the page's one-time
+   scroll reveal (which can miss it after a remount and leave it invisible). */
+.head > div[data-reveal] {
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 
 /* One full-bleed stage: starfield behind, ship / card / schedule placed on it in
@@ -52,127 +60,121 @@
   z-index: 2;
 }
 
-/* ---------- schedule panel (wide stages, right edge): hover a date to jump to it ---------- */
+/* ---------- schedule (wide stages, right edge): three dates at a time ---------- */
 .schedule {
   position: absolute;
   z-index: 3;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 4px;
-  padding: 6px;
-  overflow-y: auto;
-  scrollbar-width: none;
+  padding: 10px 14px 10px 6px;
   background: rgba(var(--syrus-void-rgb), 0.5);
   border: 1px solid var(--syrus-seam);
   backdrop-filter: blur(6px);
 }
 
-.schedule::-webkit-scrollbar {
-  display: none;
+/* shows exactly three rows; the reel slides behind it as you scroll */
+.window {
+  overflow: hidden;
 }
 
-.group {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.groupLabel {
-  line-height: 1.2;
-  padding: 2px 8px 3px;
-  font-weight: 700;
-  font-size: 0.5625rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--syrus-dim);
+.reel {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: transform 0.55s var(--syrus-ease-scan);
 }
 
 .row {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1px;
-  padding: 4px 8px;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 10px;
   text-align: left;
   background: transparent;
   border: 0;
   border-left: 2px solid transparent;
   cursor: pointer;
   font-family: var(--syrus-font-text);
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  opacity: 0.4;
+  transition: opacity 0.35s ease, background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .row:hover,
 .row:focus-visible {
-  background: rgba(var(--syrus-holo-rgb), 0.1);
-  border-left-color: var(--syrus-holo);
+  opacity: 0.8;
+  background: rgba(var(--syrus-holo-rgb), 0.08);
 }
 
-/* short stages: tighter rows so the whole list still fits */
-.schedule[data-dense="true"] {
-  gap: 2px;
-  padding: 4px;
-}
-
-.schedule[data-dense="true"] .groupLabel {
-  padding: 1px 8px 2px;
-  font-size: 0.5rem;
-}
-
-.schedule[data-dense="true"] .row {
-  padding: 2px 8px;
-}
-
-.schedule[data-dense="true"] .rowDate {
-  font-size: 0.75rem;
-}
-
-.schedule[data-dense="true"] .rowTitle {
-  font-size: 0.625rem;
-}
-
-.rowDate {
-  line-height: 1.2;
-  font-weight: 700;
-  font-size: 0.8125rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--syrus-holo);
-  opacity: 0.55;
-  transition: opacity 0.2s ease, color 0.2s ease;
-}
-
-.rowTitle {
-  line-height: 1.2;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.6875rem;
-  color: var(--syrus-dim);
-}
-
-.rowDone .rowDate {
-  opacity: 0.85;
-}
-
-.rowActive {
+/* the stop you are at: bold and bright, the other two stay light */
+.rowActive,
+.rowActive:hover {
+  opacity: 1;
   background: rgba(var(--syrus-yellow-rgb), 0.08);
   border-left-color: var(--syrus-yellow);
 }
 
+.rowPhase {
+  line-height: 1.2;
+  font-weight: 400;
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--syrus-dim);
+}
+
+.rowDate {
+  line-height: 1.2;
+  font-weight: 400;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--syrus-holo);
+}
+
+.rowTitle {
+  max-width: 100%;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--syrus-dim);
+}
+
 .rowActive .rowDate {
-  opacity: 1;
+  font-weight: 700;
   color: var(--syrus-yellow);
 }
 
 .rowActive .rowTitle {
+  font-weight: 700;
   color: var(--syrus-bone);
 }
 
-.row:hover .rowDate {
-  opacity: 1;
+.rowActive .rowPhase {
+  font-weight: 700;
+}
+
+/* slim scroll indicator down the right edge: where the three visible dates sit among all ten */
+.thumbTrack {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: 5px;
+  width: 2px;
+  background: var(--syrus-seam);
+}
+
+.thumb {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: var(--syrus-holo);
+  box-shadow: 0 0 6px rgba(var(--syrus-holo-rgb), 0.6);
+  transition: top 0.55s var(--syrus-ease-scan);
 }
 
 /* ---------- bottom bar: BB-8's rail, fixed to the bottom-left ---------- */
@@ -419,7 +421,8 @@
   }
 
   .row,
-  .rowDate {
+  .reel,
+  .thumb {
     transition: none;
   }
 }

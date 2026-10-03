@@ -15,11 +15,9 @@ export const bottomZone = (w) => 124;
 const STAR_ROW = { high: 0.3, mid: 0.44, low: 0.58 };
 const STACKED_STAR_ROW = { high: 0.2, mid: 0.27, low: 0.34 };
 
-// Gap above the schedule panel, so it sits a little below the top of the stage.
-const PANEL_TOP = 36;
-// The panel runs down to just above the floating back-to-top button. On wide stages
-// BB-8's rail only spans the left side, so the panel can go lower than the usable area.
-const PANEL_BOTTOM = 64;
+// The schedule panel shows this many dates at a time, each this tall (px).
+export const SCHEDULE_ROWS = 3;
+export const SCHEDULE_ROW_H = 76;
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const round = (r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, Math.round(v)]));
@@ -87,14 +85,17 @@ export function placements(w, h, layout) {
 }
 
 /**
- * The schedule panel down the right edge (wide stages only; null on narrow ones,
- * where the dots along the bottom do the job).
+ * The schedule panel on the right edge (wide stages only; null on narrow ones, where
+ * the dots along the bottom do the job). It shows SCHEDULE_ROWS dates at a time and
+ * sits in the middle of the usable height.
  */
 export function panelRect(w, h) {
   if (w < 900) return null;
   const m = clamp(w * 0.03, 12, 48);
   const pw = clamp(w * 0.17, 190, 240);
-  return round({ x: w - m - pw, y: PANEL_TOP, w: pw, h: h - PANEL_TOP - PANEL_BOTTOM });
+  const ph = SCHEDULE_ROW_H * SCHEDULE_ROWS + 20;
+  const usable = h - bottomZone(w);
+  return round({ x: w - m - pw, y: Math.max(12, (usable - ph) / 2), w: pw, h: ph });
 }
 
 /**

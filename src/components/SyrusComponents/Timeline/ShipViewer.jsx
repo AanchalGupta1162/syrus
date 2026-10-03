@@ -7,7 +7,7 @@ import styles from "./ShipViewer.module.css";
  * 3D starship viewer. Shows the model for build step `index` and plays a
  * scan-wipe when the step changes. Loaded lazily by Timeline.jsx.
  */
-export default function ShipViewer({ steps, index, galaxy }) {
+export default function ShipViewer({ steps, index, galaxy, heading }) {
   const hostRef = useRef(null);
   const sceneRef = useRef(null);
   const indexRef = useRef(index);
@@ -17,6 +17,8 @@ export default function ShipViewer({ steps, index, galaxy }) {
   const [supported] = useState(() => webglAvailable());
 
   indexRef.current = index;
+  const headingRef = useRef(heading);
+  headingRef.current = heading;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -34,12 +36,17 @@ export default function ShipViewer({ steps, index, galaxy }) {
       return undefined;
     }
     sceneRef.current = api;
+    api.setHeading(headingRef.current.x, headingRef.current.y);
     api.show(indexRef.current);
     return () => {
       api.dispose();
       sceneRef.current = null;
     };
   }, [steps, supported, attempt]);
+
+  useEffect(() => {
+    sceneRef.current?.setHeading(heading.x, heading.y);
+  }, [heading.x, heading.y]);
 
   useEffect(() => {
     sceneRef.current?.show(index);

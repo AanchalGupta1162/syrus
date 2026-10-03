@@ -15,14 +15,14 @@ const gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(TAU *
 
 // A star: mostly tiny pinpoints, about one in nine slightly bigger with a glint.
 // `speed` is slow on purpose, the twinkle is meant to be gentle.
-const makeAdder = (pts) => (x, y) => {
-  const sparkle = Math.random() < 0.11;
+const makeAdder = (pts) => (x, y, look = {}) => {
+  const sparkle = look.sparkle ?? Math.random() < 0.11;
   pts.push({
     x,
     y,
     k: Math.min(1, Math.hypot(x, y)),
     size: sparkle ? 1.2 + Math.random() * 0.9 : 0.45 + Math.random() * 0.75,
-    bright: sparkle ? 0.95 : 0.5 + Math.random() * 0.4,
+    bright: look.bright ?? (sparkle ? 0.95 : 0.5 + Math.random() * 0.4),
     sparkle,
     phase: Math.random() * TAU,
     speed: 0.5 + Math.random() * 1.1,
@@ -68,6 +68,43 @@ const ringOf = (add, radius, spread, knots, perKnot, haze) => {
 };
 
 export const SHAPES = {
+  // The Death Star: a lit ball of pinpoints with the equatorial trench and the dish.
+  deathstar: {
+    flat: 1,
+    tilt: 0,
+    rot: 0,
+    build: (add) => {
+      const R = 0.6;
+      const dish = { x: -0.22, y: -0.2, r: 0.17 };
+      for (let i = 0; i < 2600; i += 1) {
+        const a = Math.random() * TAU;
+        const d = Math.sqrt(Math.random()) * R;
+        const x = Math.cos(a) * d;
+        const y = Math.sin(a) * d;
+        // lit from the upper left, dark on the far edge
+        const lit = 0.35 + 0.65 * Math.max(0, 1 - Math.hypot(x + 0.25, y + 0.25) / (R * 1.5));
+        const inTrench = Math.abs(y - 0.07 - x * 0.04) < 0.014;
+        const dd = Math.hypot(x - dish.x, y - dish.y);
+        if (inTrench) {
+          if (Math.random() < 0.8) continue; // the trench is a dark line
+        }
+        if (dd < dish.r - 0.02) {
+          if (Math.random() < 0.7) continue; // the dish is a dark bowl
+        }
+        add(x, y, { bright: Math.min(0.95, 0.4 + lit * 0.55), sparkle: false });
+      }
+      // bright rim around the dish, a few windows along the trench
+      for (let j = 0; j < 60; j += 1) {
+        const a = (j / 60) * TAU;
+        add(dish.x + Math.cos(a) * dish.r, dish.y + Math.sin(a) * dish.r, { bright: 0.9, sparkle: false });
+      }
+      add(dish.x, dish.y, { bright: 1, sparkle: true });
+      for (let j = 0; j < 14; j += 1) {
+        const x = (Math.random() * 2 - 1) * R * 0.95;
+        if (Math.hypot(x, 0.07) < R) add(x, 0.07 + x * 0.04, { bright: 0.95, sparkle: Math.random() < 0.35 });
+      }
+    },
+  },
   // Two tight arms.
   spiral2: {
     flat: 0.5,

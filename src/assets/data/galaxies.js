@@ -7,7 +7,7 @@
 //   rgb2    - second colour        ("r, g, b")
 //   shape   - the galaxy's form: one of the names in galaxyShapes.js
 //             (spiral2, spiral3, pinwheel, barred, elliptical, ring, cartwheel,
-//              edgeon, irregular, globular)
+//              edgeon, irregular, globular, deathstar)
 //   layout  - where things sit for this stop
 //     ship: "left" | "right"        which side the ship parks on (the card goes
 //                                    on the other side of the galaxy)
@@ -77,10 +77,10 @@ const galaxies = [
     layout: { ship: "left", card: "low" },
   },
   {
-    name: "Yavin Prime",
-    rgb: "95, 212, 240",
-    rgb2: "255, 107, 26",
-    shape: "cartwheel",
+    name: "Death Star",
+    rgb: "205, 212, 228",
+    rgb2: "110, 120, 145",
+    shape: "deathstar",
     layout: { ship: "right", card: "mid" },
   },
 ];

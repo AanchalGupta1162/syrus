@@ -11,6 +11,7 @@
 import {
   ACESFilmicToneMapping,
   DirectionalLight,
+  Group,
   Box3,
   HemisphereLight,
   MathUtils,
@@ -101,8 +102,8 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
   controls.enableZoom = false;
   controls.enablePan = false;
   controls.rotateSpeed = 0.7;
-  controls.autoRotate = !reduceMotion;
-  controls.autoRotateSpeed = 1.6;
+  // The ship holds a heading (see setHeading) instead of spinning; dragging still orbits.
+  controls.autoRotate = false;
   controls.minPolarAngle = Math.PI * 0.12;
   controls.maxPolarAngle = Math.PI * 0.62;
   // OrbitControls sets touch-action:none; let vertical swipes scroll the page.
@@ -116,9 +117,20 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
   controls.addEventListener("end", () => {
     clearTimeout(resumeTimer);
     resumeTimer = window.setTimeout(() => {
-      controls.autoRotate = !reduceMotion;
+      controls.autoRotate = false;
     }, 2200);
   });
+
+  /* ---------- heading ---------- */
+  // The models' nose points along +z. pivot sits on the model's centre and turns
+  // about the vertical axis, so the nose can be aimed at any direction on screen.
+  const pivot = new Group();
+  const holder = new Group();
+  pivot.add(holder);
+  scene.add(pivot);
+  let yaw = 0;
+  let yawTarget = 0;
+  let yawSet = false;
 
   /* ---------- state ---------- */
   const loader = new GLTFLoader();
@@ -145,10 +157,12 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
       minY: box.min.y,
     };
     controls.target.copy(center);
+    pivot.position.set(center.x, 0, center.z);
+    holder.position.set(-center.x, 0, -center.z);
 
-    // Start from a pleasant 3/4 view.
-    const az = MathUtils.degToRad(38);
-    const el = MathUtils.degToRad(24);
+    // Look down from the front and above: screen right is +x, screen down is +z.
+    const az = 0;
+    const el = MathUtils.degToRad(52);
     camera.position
       .set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el))
       .multiplyScalar(100)
@@ -205,8 +219,8 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
           }
         });
         root.visible = false;
-        scene.add(root);
-        root.updateMatrixWorld(true);
+        holder.add(root);
+        pivot.updateMatrixWorld(true);
         if (!bounds) applyBounds(new Box3().setFromObject(root));
         const model = { root, mats: [...mats], pos: root.position.clone(), scale: root.scale.x };
         models.set(i, model);
@@ -329,6 +343,11 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
     const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
     last = now;
     updateTransition(now);
+    if (yawTarget !== yaw) {
+      const diff = Math.atan2(Math.sin(yawTarget - yaw), Math.cos(yawTarget - yaw));
+      yaw = Math.abs(diff) < 0.002 ? yawTarget : yaw + diff * (1 - Math.exp(-dt * 3.5));
+      pivot.rotation.y = yaw;
+    }
     controls.update(dt);
     renderer.render(scene, camera);
     raf = requestAnimationFrame(frame);
@@ -379,8 +398,19 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
 
   resize();
 
+  // Turn the nose to point along the screen direction (dx right, dy down).
+  function setHeading(dx, dy) {
+    yawTarget = Math.atan2(dx, dy);
+    if (!yawSet || reduceMotion) {
+      yaw = yawTarget;
+      pivot.rotation.y = yaw;
+      yawSet = true;
+    }
+  }
+
   return {
     show,
+    setHeading,
     dispose() {
       disposed = true;
       isDead = true;
