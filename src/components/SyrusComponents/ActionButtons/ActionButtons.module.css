@@ -12,13 +12,9 @@
   flex: none;
 }
 
-.unstop {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex: none;
-  background: #fff;
+/* Register button: "Register Now" on desktop, just "Register" on phones */
+.registerShort {
+  display: none;
 }
 
 /* Navbar: tighter buttons, icon-only on small phones */
@@ -38,10 +34,24 @@
     display: none;
   }
 
+  .registerFull {
+    display: none;
+  }
+
+  .registerShort {
+    display: inline;
+  }
+
   :global(.syrus-page) .compact :global(.syrus-btn) {
     width: 44px;
     min-height: 44px;
     padding: 0;
+  }
+
+  /* The Register button keeps its word; only Join Group goes icon-only */
+  :global(.syrus-page) .compact :global(.syrus-btn).register {
+    width: auto;
+    padding: 0 16px;
   }
 }
 

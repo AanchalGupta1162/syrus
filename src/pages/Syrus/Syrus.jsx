@@ -7,6 +7,7 @@ import Sponsors from "../../components/SyrusComponents/Sponsors/Sponsors";
 import PrizePool from "../../components/SyrusComponents/PrizePool/PrizePool";
 import Timeline from "../../components/SyrusComponents/Timeline/Timeline";
 import Tracks from "../../components/SyrusComponents/Tracks/Tracks";
+import ForceQuote from "../../components/SyrusComponents/ForceQuote/ForceQuote";
 import Faq from "../../components/SyrusComponents/Faq/Faq";
 import Gallery from "../../components/SyrusComponents/Gallery/Gallery";
 import SyrusFooter from "../../components/SyrusComponents/SyrusFooter/SyrusFooter";
@@ -63,6 +64,7 @@ function Syrus() {
         <PrizePool />
         <Timeline />
         <Tracks />
+        <ForceQuote />
         <Faq />
         <Gallery />
       </main>

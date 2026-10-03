@@ -73,25 +73,22 @@
   /* text-decoration: underline; */
 }
 
-.nav-item.syrus-nav a {
-  color: white;
-  text-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
+/* "SYRUS 7.0" link: a normal nav link (same font, size and hover lift as the
+   others), tinted Star Wars yellow with a soft glow. */
+.nav-item.syrus-nav > a {
+  color: #ffe81f;
+  text-shadow: 0 0 8px rgba(255, 232, 31, 0.45);
+  transition:
+    color 0.2s ease-out,
+    text-shadow 0.2s ease-out;
 }
 
-.nav-item.syrus-nav:hover {
-  transform: translateY(-3px);
-}
-
-.nav-item.syrus-nav:hover a {
-  color: white;
+.nav-item.syrus-nav:hover > a {
+  color: #fff3a0;
   text-shadow:
-    0 0 8px rgba(255, 179, 0, 0.6),
-    0 0 20px rgba(255, 45, 138, 0.4),
-    0 0 40px rgba(123, 104, 238, 0.3),
-    2px 2px 0px rgba(255, 45, 138, 0.5);
-  filter: drop-shadow(0 0 10px rgba(255, 112, 67, 0.3))
-    drop-shadow(0 0 20px rgba(123, 104, 238, 0.15));
+    0 0 6px rgba(255, 232, 31, 0.9),
+    0 0 18px rgba(255, 232, 31, 0.55),
+    0 0 32px rgba(233, 164, 21, 0.35);
 }
 
 @media screen and (max-width: 1399px) {
@@ -108,13 +105,6 @@
   }
   .nav-item a {
     font-size: 1.64rem; /* scaled 40% but slightly reduced for medium screens */
-  }
-  .nav-item.syrus-nav a {
-    text-shadow:
-      0 0 8px rgba(255, 179, 0, 0.6),
-      0 0 20px rgba(255, 45, 138, 0.4),
-      0 0 40px rgba(123, 104, 238, 0.3),
-      2px 2px 0px rgba(255, 45, 138, 0.5);
   }
 }
 
@@ -136,9 +126,6 @@
   }
   .nav-item a {
     font-size: 1.4rem; /* scaled up from earlier mobile size */
-  }
-  .nav-item.syrus-nav a {
-    font-size: 2.3rem;
   }
 }
 

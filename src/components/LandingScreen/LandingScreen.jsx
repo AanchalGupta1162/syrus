@@ -3,6 +3,7 @@ import Button from "react-bootstrap/Button";
 import CodecellModel from "../CodecellModel/CodecellModel";
 import GlassContainer from "../GlassContainer/GlassContainer";
 import VESITLogo from "/VESIT.png";
+import "../misc/SyrusCta/SyrusCta.css";
 import "./LandingScreen.css";
 
 const LandingScreen = ({ events = [] }) => {
@@ -36,7 +37,7 @@ const LandingScreen = ({ events = [] }) => {
               {showEventsLabel && "Events"}
             </Button>
           )} */}
-          <Button className="syrus-button-landing" href="/syrus">
+          <Button className="syrus-cta syrus-button-landing" href="/syrus">
             SYRUS 7.0
           </Button>
         </div>

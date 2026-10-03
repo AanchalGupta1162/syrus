@@ -1,0 +1,163 @@
+/* =====================================================================
+   SYRUS call-to-action button (home page hero)
+   Star Wars-themed to match the Syrus page (/syrus): chamfered plate,
+   yellow 1px seam and a light sweep on hover, set in the site's own
+   Press Start 2P font so it sits with the other buttons.
+
+   Usage: add the class `syrus-cta` to an <a> or react-bootstrap <Button>.
+   Size it with font-size only (everything else is in em).
+   ===================================================================== */
+.syrus-cta {
+  --cta-cut: 0.7em;
+  --cta-yellow: #ffe81f;
+  --cta-void: #04050a;
+  --cta-fg: var(--cta-yellow);
+  --cta-bg: rgba(4, 5, 10, 0.86);
+  --cta-line: var(--cta-yellow);
+
+  /* react-bootstrap's .btn reads these on hover / focus / active, so they
+     are pointed at our own tokens and the plate never flashes a Bootstrap colour. */
+  --bs-btn-color: var(--cta-fg);
+  --bs-btn-hover-color: var(--cta-fg);
+  --bs-btn-active-color: var(--cta-fg);
+  --bs-btn-bg: var(--cta-line);
+  --bs-btn-hover-bg: var(--cta-line);
+  --bs-btn-active-bg: var(--cta-line);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-focus-box-shadow: none;
+  --bs-btn-active-shadow: none;
+
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 0.95em 1.7em;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--cta-line);
+  color: var(--cta-fg);
+  font-family: "Press Start 2P", sans-serif; /* same font as the rest of the site */
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-shadow: 0 0 10px rgba(255, 232, 31, 0.45);
+  white-space: nowrap;
+  cursor: pointer;
+  overflow: hidden;
+  clip-path: polygon(
+    var(--cta-cut) 0,
+    100% 0,
+    100% calc(100% - var(--cta-cut)),
+    calc(100% - var(--cta-cut)) 100%,
+    0 100%,
+    0 var(--cta-cut)
+  );
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    text-shadow 0.2s ease,
+    transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Dark plate, inset 1px so the yellow background shows as a seam. */
+.syrus-cta::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -2;
+  background: var(--cta-bg);
+  clip-path: polygon(
+    calc(var(--cta-cut) - 0.4px) 0,
+    100% 0,
+    100% calc(100% - var(--cta-cut) + 0.4px),
+    calc(100% - var(--cta-cut) + 0.4px) 100%,
+    0 100%,
+    0 calc(var(--cta-cut) - 0.4px)
+  );
+  transition: background-color 0.2s ease;
+}
+
+/* Light sweep, parked off to the left until hover. */
+.syrus-cta::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -45%;
+  z-index: -1;
+  width: 35%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  transform: skewX(-20deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.syrus-cta:hover,
+.syrus-cta:focus-visible {
+  --cta-fg: var(--cta-void);
+  --cta-bg: var(--cta-yellow);
+  text-shadow: none;
+  transform: translateY(-2px);
+}
+
+.syrus-cta:hover::after,
+.syrus-cta:focus-visible::after {
+  animation: syrus-cta-sweep 0.7s ease-out;
+}
+
+.syrus-cta:focus-visible {
+  /* Outlines are cut off by the clip-path, so focus is a cyan seam instead. */
+  --cta-line: #5fd4f0;
+  outline: none;
+}
+
+.syrus-cta:active {
+  --cta-fg: var(--cta-void);
+  --cta-bg: #e9a415;
+  --cta-line: #e9a415;
+  transform: translateY(0);
+}
+
+@keyframes syrus-cta-sweep {
+  0% {
+    left: -45%;
+    opacity: 0.9;
+  }
+  100% {
+    left: 130%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syrus-cta,
+  .syrus-cta::before {
+    transition: none;
+  }
+
+  .syrus-cta:hover,
+  .syrus-cta:focus-visible {
+    transform: none;
+  }
+
+  .syrus-cta:hover::after,
+  .syrus-cta:focus-visible::after {
+    animation: none;
+  }
+}
