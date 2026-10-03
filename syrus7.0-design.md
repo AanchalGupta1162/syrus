@@ -71,12 +71,19 @@ Motion tokens: `--syrus-ease-scan`, `--syrus-ease-jump`.
 
 ## 3. Page flow
 
-1. **Intro** (`Intro`): tall scroll track (430svh) with a pinned 100svh stage.
+1. **Intro** (`Intro`): tall scroll track (560svh) with a pinned 100svh stage.
    Scroll progress is smoothed (exponential lerp) and drives everything:
    *prologue* ("A long time ago in a galaxy far, far away....") → *title
    recedes* → *perspective crawl* → *hyperspace jump* (star streaks + flash) →
    *hero arrives*. It is not a video and not time-based; the visitor controls
-   it. A "Skip intro" button jumps to the hero.
+   it. A "Skip intro" button jumps to the hero. The "SYRUS 7.0" title here is
+   in the **secondary** font (Star Jedi Hollow, the yellow outline of the film
+   opening). It opens exactly as wide as the screen, holds, then recedes slowly
+   straight back into the distance: scale only, so it never drifts up or down
+   (a steady, geometric shrink, softened by `FOLLOW_RATE`).
+   Its timing is the `TITLE` block at the top of `Intro.jsx`. The hero title is
+   the filled primary font.
+   **Rapid wheel scrolling is slowed a little** (see below).
 2. **Hero** (`Hero`, lives inside the intro stage as the last frame): CodeCell++
    and VESIT logos, "Syrus 7.0" in the primary font, "9th – 10th October",
    then Register + Join Group. Nothing else.
@@ -87,6 +94,29 @@ Background: one fixed `Starfield` canvas behind the whole page (twinkling
 stars, cross-shaped glints, an occasional shooting star, and the hyperspace
 streaks). The hyperspace streaks are driven by the shared `starState.warp`
 value that `Intro` writes.
+
+#### Calmer wheel scrolling (`Intro/introWheelSmoother.js`)
+A hard flick of the wheel or trackpad would rush through the whole intro in a
+blink. While the page is inside the intro, the wheel is eased and, when it is
+rapid, slowed down a little:
+
+- **Normal scrolling** (up to about 1500 px/s) is followed 1:1; it only gets a soft
+  ease so it glides.
+- **Rapid scrolling** keeps only part of the extra distance. The share falls
+  smoothly from 100 % at 1500 px/s to 45 % at 5000 px/s and above, so a hard flick
+  travels about half as far and takes more than one flick to cross the intro.
+- Nothing plays by itself: the page only ever moves in response to the wheel.
+- Tuning constants are at the top of the file (`NORMAL_SPEED`, `RAPID_SPEED`,
+  `RAPID_GAIN`, `EASE_RATE`).
+- It only acts inside the intro. At the hero it hands over to native scrolling,
+  and it steps aside when the page is scroll-locked (menu or modal open), when
+  the wheel is over something with its own scrolling, and when anything else
+  moves the page (keyboard, scrollbar, menu links, "Skip intro").
+- Touch scrolling is left native. `prefers-reduced-motion` disables the smoother.
+- The site sets `scroll-behavior: smooth` on `<html>`, so every frame is written
+  with `behavior: "instant"`.
+- The wheel listener is non-passive, so it is only attached while the page is
+  within one screen of the intro.
 
 ### Navbar
 - Hidden until the **Sponsors** section scrolls into view, then slides down:
@@ -164,6 +194,44 @@ Five cards (Blockchain, FinTech, Agentic AI, Quantum, FE Special). Data:
 Statements" button in `Tracks.jsx`; on hackathon day, uncomment it and fill in
 `problemStatementsUrl` for each track.
 
+### Gallery
+
+- Photos live in `public/Gallery/Syrus_XX/` and are listed, **newest edition
+  first** (26, 25, 24), in the `IMAGES` array at the top of `Gallery.jsx`.
+  To add photos, drop the files in the folder and add their numbers to the
+  matching `edition(year, [...])` line.
+- Native CSS scroll-snap carousel. It **moves on one photo every 3 seconds**
+  (`AUTOPLAY_MS`) and wraps back to the first photo after the last. It waits
+  while a mouse is over the photos, a finger or the keyboard is on them, a
+  photo is open, the section is off screen or the tab is hidden, and it is off
+  entirely with `prefers-reduced-motion`. Using the arrows restarts the 3 s timer.
+- Clicking a photo opens `GalleryLightbox.jsx`: a full-screen viewer portalled
+  into `.syrus-page`. `Esc` / click outside closes, ← → or swipe moves
+  (wrapping), focus goes in and returns to the photo, and page scroll is locked.
+- The arrow buttons get their gap from `padding-top` on `.controls`, because
+  `.syrus-page .syrus-container { margin: 0 auto }` overrides any `margin-top`.
+
+### Force quote ("May the Force be with you")
+
+`ForceQuote/` sits between **Tracks** and **FAQs**: a 230svh scroll track with a
+sticky full-screen stage, driven by eased scroll progress like the intro.
+It **overlaps its neighbours**: JS gives it a top margin of -50% of Tracks' height
+and a bottom margin of -50% of the FAQ's height (`OVERLAP_TRACKS` / `OVERLAP_FAQ`), so it
+starts when Tracks is 50% scrolled and is finished when 50% of the FAQ is in view.
+A dark scrim fades in behind it so it reads over what is still on screen, and the
+section ignores pointer events so nothing under it stops being clickable.
+
+Sequence: a blade of light draws across the screen, splits open and reveals the
+quote from the middle out, the six words land one by one ("force" in yellow), it
+holds with a slow push-in and a swelling glow, then rushes toward the viewer into a
+short hyperspace streak (`starState.warp`, peak `WARP_PEAK`) and gives way to the FAQ.
+Only transform / opacity / clip-path animate. With `prefers-reduced-motion` it is a
+plain block showing the finished quote (no overlap, no animation). To retime it,
+edit the `seg(p, a, b)` ranges in `apply()`; to make it longer or shorter change
+`.track` height in the CSS. The overlap is measured on load, resize and font load,
+not when an FAQ item opens. `Intro.jsx` only writes `starState.warp` while its own
+progress is below 1 so the two never fight.
+
 ### Call A Mentor
 Logic is unchanged (`CallAMentor.jsx`); only `CallAMentor.module.css` was
 restyled as a chamfered comm-panel.
@@ -236,17 +304,19 @@ src/
     syrusConfig.js          Switches & links
     icons.jsx               Inline SVG icons
     Starfield/              Fixed space background + hyperspace streaks
-    Intro/                  Scroll-driven prologue → crawl → warp
+    Intro/                  Scroll-driven prologue → crawl → warp; introWheelSmoother.js (calmer wheel scrolling)
     Hero/                   Minimal hero
     ActionButtons/          Register / Call a Mentor + Join Group
     Navbar/                 Top bar, menu button, full-screen menu
     SectionHeading/         Secondary-font section title
     Timeline/               Timeline.jsx, ShipViewer.jsx, shipScene.js (three.js)
-    Sponsors/  PrizePool/  Tracks/  Faq/  Gallery/
+    Sponsors/  PrizePool/  Tracks/  Faq/
+    ForceQuote/             Scroll-driven "May the Force be with you" moment
+    Gallery/                Gallery.jsx (carousel + autoplay), GalleryLightbox.jsx (photo viewer)
     SyrusFooter/  SyrusScrollToTop/  CallAMentor/
 public/
   sponsors/                 Sponsor logos
-  Gallery/                  Gallery photos (Syrus_24, Syrus_25)
+  Gallery/                  Gallery photos (Syrus_24, Syrus_25, Syrus_26)
   spaceship-3d-models/      10 build-step starship .glb files
   codecell-logo.webp  VESIT.png
 ```

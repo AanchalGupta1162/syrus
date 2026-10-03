@@ -1,8 +1,8 @@
 .track {
   position: relative;
   z-index: 1;
-  height: 430vh;
-  height: 430svh;
+  height: 560vh;
+  height: 560svh;
 }
 
 .stage {
@@ -56,13 +56,17 @@
   top: 50%;
   margin-top: -0.5em;
   text-align: center;
-  font-family: var(--syrus-font-primary);
-  font-size: clamp(3rem, 14vw, 10.5rem);
+  font-family: var(--syrus-font-secondary);
+  font-size: 18vw; /* about screen-wide; Intro.jsx fine-tunes it to the exact width */
   line-height: 1;
   color: var(--syrus-yellow);
   white-space: nowrap;
   opacity: 0;
   will-change: transform, opacity;
+}
+
+.titleText {
+  display: inline-block; /* measured by Intro.jsx to fit narrow screens */
 }
 
 /* Perspective crawl */

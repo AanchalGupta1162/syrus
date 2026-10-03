@@ -25,21 +25,16 @@ export default function ActionButtons({ onCallMentor, compact = false }) {
         </button>
       ) : (
         <a
-          className="syrus-btn syrus-btn--primary"
+          className={`syrus-btn syrus-btn--primary ${styles.register}`}
           href={REGISTER_URL}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Register on Unstop"
+          aria-label="Register now on Unstop"
         >
-          <span className={styles.label}>Register</span>
-          <img
-            className={styles.unstop}
-            src="/sponsors/Unstop.webp"
-            alt=""
-            width="26"
-            height="26"
-            decoding="async"
-          />
+          <span className={styles.registerFull}>Register Now</span>
+          <span className={styles.registerShort} aria-hidden="true">
+            Register
+          </span>
         </a>
       )}
 
