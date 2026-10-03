@@ -8,8 +8,9 @@
   margin: 0 auto;
   padding: clamp(36px, 6vw, 64px) var(--syrus-gutter);
   text-align: center;
-  border-top: 1px solid var(--syrus-seam);
-  border-bottom: 1px solid var(--syrus-seam);
+  border-top: 1px solid rgb(42, 47, 57);
+  border-bottom: 1px solid rgb(42, 47, 57);
+  overflow: hidden;
 }
 
 /* corner ticks */
@@ -19,61 +20,189 @@
   position: absolute;
   width: 14px;
   height: 14px;
-  border: 1px solid var(--syrus-holo);
 }
 
 .wrap::before {
   top: -1px;
   left: -1px;
-  border-right: 0;
-  border-bottom: 0;
+  border-top: 1px solid rgb(95, 212, 240);
+  border-left: 1px solid rgb(95, 212, 240);
 }
 
 .wrap::after {
   bottom: -1px;
   right: -1px;
-  border-left: 0;
-  border-top: 0;
+  border-bottom: 1px solid rgb(95, 212, 240);
+  border-right: 1px solid rgb(95, 212, 240);
 }
 
 .kicker {
+  position: relative;
   display: block;
   font-weight: 600;
-  font-size: 0.8125rem;
+  font-size: 13px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--syrus-holo);
+  color: rgb(95, 212, 240);
 }
 
 .amount {
-  margin: clamp(14px, 2.4vw, 22px) 0;
+  position: relative;
+  margin: 22px 0 18px;
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: 0.12em;
   font-family: var(--syrus-font-text);
   font-weight: 800;
-  font-size: clamp(3.2rem, 14vw, 7.5rem);
+  font-size: clamp(3.2rem, 14vw, 120px);
   line-height: 1;
   letter-spacing: 0.01em;
-  color: var(--syrus-yellow);
+  color: rgb(255, 232, 31);
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 36px rgba(var(--syrus-yellow-rgb), 0.28);
+  text-shadow: rgba(255, 232, 31, 0.28) 0px 0px 36px;
+  will-change: transform;
+  transform: scale(1);
+  transition: text-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* ── Numbers flicker at beats (₹50k, ₹70k) ── */
+.amountFlicker {
+  animation: numFlicker 0.5s steps(2, end);
+}
+
+@keyframes numFlicker {
+  0%   { opacity: 1; text-shadow: rgba(255, 232, 31, 0.28) 0px 0px 36px; }
+  12%  { opacity: 0.3; text-shadow: none; }
+  24%  { opacity: 1; text-shadow: rgba(255, 232, 31, 0.45) 0px 0px 48px; }
+  36%  { opacity: 0.4; text-shadow: none; }
+  48%  { opacity: 1; }
+  60%  { opacity: 0.2; text-shadow: none; }
+  72%  { opacity: 1; text-shadow: rgba(255, 232, 31, 0.4) 0px 0px 42px; }
+  84%  { opacity: 0.5; text-shadow: none; }
+  100% { opacity: 1; text-shadow: rgba(255, 232, 31, 0.28) 0px 0px 36px; }
+}
+
+/* ── Subtle glow on landing (₹1,00,000) ── */
+.amountLanded {
+  animation: numLand 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes numLand {
+  0% {
+    transform: scale(1);
+    text-shadow: rgba(255, 232, 31, 0.28) 0px 0px 36px;
+  }
+  50% {
+    transform: scale(1.03);
+    text-shadow:
+      rgba(255, 232, 31, 0.4) 0px 0px 40px,
+      rgba(255, 232, 31, 0.15) 0px 0px 70px;
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: rgba(255, 232, 31, 0.28) 0px 0px 36px;
+  }
 }
 
 .currency {
   font-size: 0.72em;
   font-weight: 600;
-  color: var(--syrus-amber);
+  color: rgb(233, 164, 21);
+}
+
+/* ── Lightsaber container ── */
+.saberWrap {
+  display: flex;
+  align-items: center;
+  width: 560px;
+  max-width: 100%;
+  margin: 0 auto 26px;
+}
+
+/* Hilt */
+.hilt {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 16px;
+  padding: 0 4px;
+  background: rgb(26, 30, 38);
+  border: 1px solid rgb(42, 47, 57);
+  border-radius: 2px;
+}
+
+.pommel {
+  width: 10px;
+  height: 10px;
+  background: rgb(139, 143, 152);
+  border-radius: 1px;
+}
+
+.gripBar {
+  width: 3px;
+  height: 16px;
+  background: rgb(42, 47, 57);
+}
+
+.emitterBlock {
+  width: 18px;
+  height: 8px;
+  background: rgb(18, 21, 27);
+  border: 1px solid rgb(42, 47, 57);
+}
+
+.emitterCap {
+  width: 6px;
+  height: 18px;
+  background: rgb(139, 143, 152);
+  border-radius: 1px;
+}
+
+/* Blade track */
+.bladeTrack {
+  flex: 1 1 0%;
+  height: 18px;
+  display: flex;
+  align-items: center;
+}
+
+/* Blade */
+.blade {
+  display: block;
+  height: 6px;
+  border-radius: 0 4px 4px 0;
+  background: rgb(255, 251, 224);
+  transition: width 0.05s linear;
+}
+
+/* Idle pulse after landing */
+.bladeIdle {
+  animation: saberIdle 2.5s ease-in-out infinite;
+}
+
+@keyframes saberIdle {
+  0%, 100% {
+    box-shadow:
+      rgb(255, 232, 31) 0px 0px 10px 3.5px,
+      rgba(255, 232, 31, 0.45) 0px 0px 32px 10px !important;
+  }
+  50% {
+    box-shadow:
+      rgb(255, 232, 31) 0px 0px 14px 5px,
+      rgba(255, 232, 31, 0.55) 0px 0px 40px 14px !important;
+  }
 }
 
 .perks {
+  position: relative;
   margin: 0;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 14px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--syrus-dim);
+  color: rgb(139, 143, 152);
 }
 
 @media (max-width: 400px) {

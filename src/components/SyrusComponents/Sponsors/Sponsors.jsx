@@ -35,8 +35,9 @@ const TIERS = [
     label: "Individual Sponsors",
     size: "md",
     items: [
-      { name: "Santosh Gupta", tag: "ML Engineer at Meta", logo: null },
-      { name: "Vishal", tag: "Senior Engineer at Microsoft", logo: null },
+      { name: "Santosh Gupta", tag: "ML Engineer at Meta", logo: "/sponsors/SantoshGuptaSir.webp" },
+      { name: "Vishal", tag: "Senior Engineer at Microsoft", logo: "/sponsors/VishalSir.webp" },
+      { name: "Ranjeet", logo: "/sponsors/RanjeetSir.webp" },
     ],
   },
   {
@@ -54,10 +55,10 @@ const TIERS = [
     size: "sm",
     items: [
       { name: "GDG VESIT", logo: "/sponsors/GDG-VESIT.webp" },
-      { name: "Prakhar", logo: null },
-      { name: "IBM Qiskit", logo: null },
+      { name: "Prakhar", logo: "/sponsors/PrakharLogo.webp" },
+      { name: "IBM Qiskit", logo: "/sponsors/QiskitLogo-WithoutBG.webp" },
       { name: "LFDT", logo: "/sponsors/LFDT.webp" },
-      { name: "CodeCell TechFusion", logo: null },
+      { name: "CodeCell TechFusion", logo: "/sponsors/CodeCellTechfusionLogo.webp" },
     ],
   },
 ];
