@@ -31,7 +31,7 @@ export function cardsRect(w, h) {
 
   if (w < 900) {
     const gap = 8;
-    const cardH = clamp(Math.floor((usable * 0.6 - 2 * gap) / 3), 82, 124);
+    const cardH = clamp(Math.floor((usable * 0.88 - 2 * gap) / 3), 82, 176);
     const ch = 3 * cardH + 2 * gap;
     return { x: m, y: Math.round(usable - ch), w: Math.round(w - 2 * m), h: ch, cardH, gap, stacked: true };
   }
@@ -56,7 +56,7 @@ export function cardsRect(w, h) {
  * @param {number} h stage height
  * @param {{ ship: "left"|"right", card: "high"|"mid"|"low" }} layout
  * @returns {{ ship: Rect, star: {x:number,y:number} }}
- *   Rect = { x, y, w, h } (top-left origin). The ship parks on the side `layout.ship`
+ *   Rect = { x, y, w, h } (top-left origin). On wide stages the ship parks on the side `layout.ship`
  *   of the free area (everything left of the card column on wide stages, everything
  *   above it on narrow ones). The galaxy's star sits on the inner side of the ship,
  *   at the height `layout.card` (kept from the old layout so each galaxy keeps its place).
@@ -68,18 +68,13 @@ export function placements(w, h, layout) {
   const cards = cardsRect(w, h);
 
   if (cards.stacked) {
-    // Stacked: star and ship above, the cards just above the bottom strip.
-    const area = cards.y - 8;
-    const shipW = Math.min(w - 2 * m, 440);
-    const shipH = Math.max(100, area * 0.72);
+    // Narrow screens have no ship: the cards take most of the height and the galaxy
+    // glows in the strip above them. `ship` is only a nominal rect there (it gives the
+    // flight direction and nothing is drawn in it).
+    const area = Math.max(1, cards.y - 8);
     const starX = onLeft ? w * 0.3 : w * 0.7;
     return {
-      ship: round({
-        x: clamp(starX - shipW / 2, m, w - m - shipW),
-        y: area - shipH,
-        w: shipW,
-        h: shipH,
-      }),
+      ship: round({ x: m, y: 0, w: w - 2 * m, h: area }),
       star: { x: Math.round(starX), y: Math.round(area * STACKED_STAR_ROW[layout.card]) },
     };
   }

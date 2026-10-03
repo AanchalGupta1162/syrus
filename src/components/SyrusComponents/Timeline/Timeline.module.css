@@ -40,6 +40,30 @@
   min-height: 480px;
 }
 
+/* Phones: a still glow where the galaxy would be (no canvas, no animation). */
+.glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 85% 190px at var(--gx) 0,
+    rgba(var(--g), 0.3) 0,
+    rgba(var(--g), 0.1) 55%,
+    transparent 100%
+  );
+  /* fades in from the top edge so the stage doesn't show a hard line under the heading */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 56px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 56px);
+  animation: glow-in 0.6s ease-out both;
+}
+
+@keyframes glow-in {
+  from {
+    opacity: 0;
+  }
+}
+
 .stage {
   position: absolute;
   inset: 0;
@@ -103,13 +127,11 @@
 }
 
 /* ---------- card ---------- */
-/* Opacity, scale and --a (0 to 1, how central the card is) are set from the scroll
-   position in Timeline.jsx, so the cards fade and grow as they pass the centre. */
+/* Opacity and scale are set from the scroll position in Timeline.jsx, so the cards
+   fade and grow as they pass the centre. */
 .card {
-  --a: 0;
   --cut: 14px;
   --panel-bg: rgba(14, 17, 23, 0.94);
-  --panel-line: color-mix(in srgb, var(--syrus-yellow) calc(var(--a) * 100%), var(--syrus-seam));
   width: 100%;
   height: 100%;
   display: flex;
@@ -120,7 +142,13 @@
   font-family: var(--syrus-font-text);
   color: inherit;
   transform-origin: 50% 50%;
+  transition: background-color 0.3s ease;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* the current card: yellow outline */
+.cardActive {
+  --panel-line: var(--syrus-yellow);
 }
 
 /* a soft yellow wash on the current card */
@@ -130,8 +158,13 @@
   inset: 1px;
   z-index: -1;
   background: linear-gradient(100deg, rgba(var(--syrus-yellow-rgb), 0.1), transparent 70%);
-  opacity: var(--a);
+  opacity: 0;
+  transition: opacity 0.3s ease;
   pointer-events: none;
+}
+
+.cardActive::after {
+  opacity: 1;
 }
 
 .card:focus-visible {

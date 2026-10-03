@@ -34,6 +34,8 @@ const WIDE_LEVELS = [
   { meta: false, lines: 0 },
 ];
 const STACKED_LEVELS = [
+  { meta: true, lines: 2 },
+  { meta: false, lines: 2 },
   { meta: false, lines: 1 },
   { meta: false, lines: 0 },
 ];
@@ -42,7 +44,7 @@ const STACKED_LEVELS = [
 // the text no longer fits, the clip check below steps every card down a level.
 const startLevel = (cards) => {
   const h = cards.cardH;
-  if (cards.stacked) return h >= 84 ? 0 : 1;
+  if (cards.stacked) return h >= 112 ? 0 : h >= 98 ? 1 : h >= 82 ? 2 : 3;
   if (h >= 172) return 0;
   if (h >= 153) return 1;
   if (h >= 134) return 2;
@@ -103,6 +105,8 @@ export default function Timeline() {
   // Fetch the viewer code while the browser is idle so it's ready before the
   // visitor gets here.
   useEffect(() => {
+    // Phones don't show the ship at all, so they never download the 3D code.
+    if (window.innerWidth < 900) return undefined;
     const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1500));
     const cancel = window.cancelIdleCallback || clearTimeout;
     const h = idle(() => import("./ShipViewer"));
@@ -249,10 +253,19 @@ export default function Timeline() {
     cardRefs.current.forEach((el, k) => {
       if (!el) return;
       const d = Math.abs(k - c);
+      // Cards two or more slots away are clipped out of sight: hide them once and
+      // leave them alone, so a scroll only restyles the three cards you can see.
+      if (d >= 2) {
+        if (el.dataset.far !== "1") {
+          el.dataset.far = "1";
+          el.style.opacity = "0";
+        }
+        return;
+      }
+      if (el.dataset.far === "1") delete el.dataset.far;
       const near = clamp01(1 - d); // 1 in the centre, 0 a full card away
-      el.style.opacity = d >= 2 ? "0" : (1 - 0.38 * Math.min(d, 1) - 0.62 * clamp01(d - 1)).toFixed(3);
+      el.style.opacity = (1 - 0.38 * Math.min(d, 1) - 0.62 * clamp01(d - 1)).toFixed(3);
       el.style.transform = `scale(${(1 - 0.045 * (1 - near)).toFixed(4)})`;
-      el.style.setProperty("--a", near.toFixed(3));
     });
     const thumb = thumbRef.current;
     if (thumb) {
@@ -325,14 +338,25 @@ export default function Timeline() {
           </div>
 
           <div className={styles.track}>
-            <Starfield
-              rgb={g.rgb}
-              rgb2={g.rgb2}
-              shape={g.shape}
-              index={active}
-              anchor={anchor}
-              dir={dir}
-            />
+            {!cards ? null : cards.stacked ? (
+              // Phones get a still glow instead of the animated galaxy canvas: that canvas was
+              // the main cause of lag on weaker devices.
+              <div
+                key={active}
+                className={styles.glow}
+                aria-hidden="true"
+                style={{ "--g": g.rgb, "--gx": `${to.star.x}px`, "--gy": `${to.star.y}px` }}
+              />
+            ) : (
+              <Starfield
+                rgb={g.rgb}
+                rgb2={g.rgb2}
+                shape={g.shape}
+                index={active}
+                anchor={anchor}
+                dir={dir}
+              />
+            )}
             <div
               ref={stageRef}
               className={styles.stage}
@@ -340,7 +364,7 @@ export default function Timeline() {
               onKeyDown={onKeyDown}
               aria-label="Timeline. Scroll or use the arrow keys to move between events."
             >
-              {measured && (
+              {measured && !cards.stacked && (
                 <motion.div
                   className={styles.ship}
                   initial={false}
