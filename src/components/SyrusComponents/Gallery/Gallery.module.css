@@ -1,143 +1,137 @@
-/* Gallery styles - Clean GTA Theme */
-.section {
-  padding: 80px 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: var(--primary-syrus-text);
-  font-family: var(--primary-syrus-font);
+.frame {
   position: relative;
+}
+
+.track {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--syrus-gutter);
+  display: flex;
+  gap: clamp(12px, 2vw, 20px);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--syrus-gutter);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  flex: 0 0 min(82vw, 420px);
+  aspect-ratio: 4 / 3;
+  scroll-snap-align: start;
+  background: var(--syrus-plate);
+  border: 1px solid var(--syrus-seam);
   overflow: hidden;
 }
 
-/* Clean overlay - no blinking */
-.section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
+/* The whole photo is a button that opens the viewer. */
+.open {
+  position: relative;
+  display: block;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg,
-      rgba(0, 0, 0, 0.3) 0%,
-      rgba(0, 0, 0, 0.5) 50%,
-      rgba(0, 0, 0, 0.7) 100%);
-  z-index: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--syrus-yellow);
+  cursor: zoom-in;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.section::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
+.open img {
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.5) 100%);
-  z-index: 1;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s var(--syrus-ease-scan);
+}
+
+.slide:hover img {
+  transform: scale(1.04);
+}
+
+/* Outlines would be clipped by the slide, so focus is drawn inside it. */
+.open:focus-visible {
+  outline: 2px solid var(--syrus-holo);
+  outline-offset: -4px;
+}
+
+/* Small "enlarge" hint, bottom-right corner */
+.zoom {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  background: rgba(var(--syrus-void-rgb), 0.72);
+  border: 1px solid rgba(var(--syrus-bone-rgb), 0.3);
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s var(--syrus-ease-scan);
   pointer-events: none;
 }
 
-.container {
-  flex: 1;
+.zoomIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.open:hover .zoom,
+.open:focus-visible .zoom {
+  opacity: 1;
+  transform: none;
+}
+
+/* Touch screens have no hover, so the hint is always shown there. */
+@media (hover: none) {
+  .zoom {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* padding, not margin: ".syrus-page .syrus-container { margin: 0 auto }" would
+   override a margin-top here and the buttons would sit against the photos. */
+.controls {
+  padding-top: 24px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-width: 90%;
-  width: 90%;
-  position: relative;
-  z-index: 2;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
-.tiltPlate {
-  width: clamp(200px, 50vw, 280px);
-  margin: 10px auto 0;
-  z-index: 2;
-  animation: slideInFromTop 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+:global(.syrus-page) button.arrow {
+  --cut: 8px;
+  width: 48px;
+  min-height: 48px;
+  padding: 0;
 }
 
-@media (min-width: 430px) {
-  .tiltPlate {
-    margin-top: 80px;
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+@media (min-width: 1100px) {
+  .slide {
+    flex-basis: 440px;
   }
 }
 
-@media (min-width: 1024px) {
-  .tiltPlate {
-    margin-top: 30px;
+@media (prefers-reduced-motion: reduce) {
+  .open img,
+  .zoom {
+    transition: none;
   }
-}
-
-@keyframes slideInFromTop {
-  0% {
-    opacity: 0;
-    transform: translateY(-40px);
+  .slide:hover img {
+    transform: none;
   }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.imageWrapper {
-  margin: 15px;
-  position: relative;
-  z-index: 2;
-  animation: galleryCardEnter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  opacity: 0;
-}
-
-.imageWrapper:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-.imageWrapper:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.imageWrapper:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.imageWrapper:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-.imageWrapper:nth-child(5) {
-  animation-delay: 0.5s;
-}
-
-.imageWrapper:nth-child(6) {
-  animation-delay: 0.6s;
-}
-
-@keyframes galleryCardEnter {
-  0% {
-    opacity: 0;
-    transform: translateY(40px) scale(0.9);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.image {
-  width: 100%;
-  height: 280px;
-  object-fit: cover;
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  filter: brightness(1);
-}
-
-.image:hover {
-  border: none;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-  transform: scale(1.03);
-  filter: brightness(1.05);
 }

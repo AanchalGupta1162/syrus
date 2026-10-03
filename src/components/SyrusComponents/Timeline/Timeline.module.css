@@ -1,322 +1,428 @@
-/* ================================
-   Section
-================================ */
-
 .section {
-  padding: 80px 0 200px;
-  background-image: url("/GTA/Timeline.webp");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  color: var(--primary-syrus-text);
   position: relative;
+  scroll-margin-top: var(--syrus-nav-h);
+}
+
+/* The heading and the stage are one unit that pins under the nav bar and holds the
+   screen while you scroll through it: every ~34% of a screen of scrolling moves to the
+   next stop. Then it releases together, so "Timeline" is never left floating. */
+.pinWrap {
+  height: calc(100svh - var(--syrus-nav-h) + var(--n) * 34svh);
+  min-height: calc(480px + var(--head-h, 0px) + var(--n) * 34svh);
+}
+
+.pinInner {
+  position: sticky;
+  top: var(--syrus-nav-h);
+}
+
+/* Kept short so the heading and the stage fit on one screen together. */
+.head {
+  padding-top: clamp(16px, 3svh, 36px);
+  padding-bottom: clamp(6px, 1.5svh, 14px);
+}
+
+/* The heading is pinned with the stage, so it never waits for the page's one-time
+   scroll reveal (which can miss it after a remount and leave it invisible). */
+.head > div[data-reveal] {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* One full-bleed stage: starfield behind, ship / card / schedule placed on it in
+   pixels by journey.js. */
+.track {
+  position: relative;
+  isolation: isolate;
   overflow: hidden;
-  font-style: normal;
-  box-shadow:
-    inset 0 250px 180px -60px rgba(0, 0, 0, 1),
-    inset 0 -250px 180px -60px rgba(0, 0, 0, 1);
+  height: calc(100svh - var(--syrus-nav-h) - var(--head-h, 0px));
+  min-height: 480px;
 }
 
-.section::before {
-  content: "";
+.stage {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(0, 0, 0, 0.5) 50%,
-    rgba(0, 0, 0, 0.7) 100%
-  );
+  z-index: 1;
+  outline-offset: -4px;
+}
+
+/* the ship flies around; left/top stay 0 and framer-motion sets the transform */
+.ship {
+  position: absolute;
+  left: 0;
+  top: 0;
   z-index: 1;
 }
 
-.section::after {
-  content: "";
+.cardPos {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 30%,
-    rgba(0, 0, 0, 0.55) 100%
-  );
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* ================================
-   Container
-================================ */
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 16px;
-  position: relative;
   z-index: 2;
 }
 
-/* ================================
-   Heading Image
-================================ */
-
-.heading {
-  display: block;
-  margin: 0 auto 60px;
-  width: clamp(200px, 50vw, 280px);
-  height: auto;
+/* ---------- schedule (wide stages, right edge): three dates at a time ---------- */
+.schedule {
+  position: absolute;
+  z-index: 3;
+  padding: 10px 14px 10px 6px;
+  background: rgba(var(--syrus-void-rgb), 0.5);
+  border: 1px solid var(--syrus-seam);
+  backdrop-filter: blur(6px);
 }
 
-/* ================================
-   Day Heading
-================================ */
+/* shows exactly three rows; the reel slides behind it as you scroll */
+.window {
+  overflow: hidden;
+}
 
-.dayHeading {
-  font-family: var(--syrus-display-font);
-  font-style: normal;
-  text-align: center;
-  margin: 50px 0 10px;
-  font-size: 3.5rem;
-  -webkit-text-stroke: 1px rgba(0, 0, 0);
-  font-weight: 700;
+.reel {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: transform 0.55s var(--syrus-ease-scan);
+}
+
+.row {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 10px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  font-family: var(--syrus-font-text);
+  opacity: 0.4;
+  transition: opacity 0.35s ease, background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.row:hover,
+.row:focus-visible {
+  opacity: 0.8;
+  background: rgba(var(--syrus-holo-rgb), 0.08);
+}
+
+/* the stop you are at: bold and bright, the other two stay light */
+.rowActive,
+.rowActive:hover {
+  opacity: 1;
+  background: rgba(var(--syrus-yellow-rgb), 0.08);
+  border-left-color: var(--syrus-yellow);
+}
+
+.rowPhase {
+  line-height: 1.2;
+  font-weight: 400;
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #e0e0e0;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  color: var(--syrus-dim);
 }
 
-/* ================================
-   Day Date
-================================ */
-
-.dayDate {
-  font-family: var(--syrus-primary3-font);
-  font-style: normal;
-  text-align: center;
-  margin: 0 0 30px;
-  font-size: 2.2rem;
-  -webkit-text-stroke: 1px rgba(0, 0, 0);
-  font-weight: 700;
+.rowDate {
+  line-height: 1.2;
+  font-weight: 400;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #e0e0e0;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  color: var(--syrus-holo);
 }
 
-/* ================================
-   Animations
-================================ */
+.rowTitle {
+  max-width: 100%;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--syrus-dim);
+}
 
-@keyframes slideInFromTop {
+.rowActive .rowDate {
+  font-weight: 700;
+  color: var(--syrus-yellow);
+}
+
+.rowActive .rowTitle {
+  font-weight: 700;
+  color: var(--syrus-bone);
+}
+
+.rowActive .rowPhase {
+  font-weight: 700;
+}
+
+/* slim scroll indicator down the right edge: where the three visible dates sit among all ten */
+.thumbTrack {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: 5px;
+  width: 2px;
+  background: var(--syrus-seam);
+}
+
+.thumb {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: var(--syrus-holo);
+  box-shadow: 0 0 6px rgba(var(--syrus-holo-rgb), 0.6);
+  transition: top 0.55s var(--syrus-ease-scan);
+}
+
+/* ---------- bottom bar: BB-8's rail, fixed to the bottom-left ---------- */
+.bottom {
+  --m: clamp(12px, 3vw, 48px);
+  position: absolute;
+  left: var(--m);
+  right: var(--m);
+  bottom: 8px;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.railWrap {
+  --bb8-s: clamp(36px, 4.2vw, 50px);
+  flex: 1 1 auto;
+  max-width: 560px;
+  min-width: 0;
+}
+
+.railInner {
+  position: relative;
+}
+
+.rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+}
+
+.stop {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+/* connector to the previous stop */
+.stop + .stop::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--syrus-seam);
+  transition: background-color 0.3s ease;
+}
+
+.stop + .stopDone::before,
+.stop + .stopActive::before {
+  background: var(--syrus-holo);
+}
+
+.stopBtn {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dot {
+  width: clamp(20px, 2.4vw, 28px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--syrus-plate);
+  border: 1.5px solid var(--syrus-seam);
+  color: var(--syrus-dim);
+  font-family: var(--syrus-font-text);
+  font-weight: 700;
+  font-size: clamp(0.5625rem, 0.9vw, 0.6875rem);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.3s ease, color 0.3s ease, background-color 0.3s ease,
+    transform 0.3s var(--syrus-ease-scan);
+}
+
+.stopBtn:hover .dot {
+  border-color: var(--syrus-holo);
+  color: var(--syrus-holo);
+}
+
+.stopDone .dot {
+  border-color: var(--syrus-holo);
+  color: var(--syrus-holo);
+}
+
+.stopActive .dot {
+  background: var(--syrus-yellow);
+  border-color: var(--syrus-yellow);
+  color: var(--syrus-void);
+  transform: scale(1.18);
+  box-shadow: 0 0 14px rgba(var(--syrus-yellow-rgb), 0.45);
+}
+
+/* ---------- card ---------- */
+.card {
+  --cut: 14px;
+  --panel-bg: rgba(18, 21, 27, 0.96);
+  width: 100%;
+  display: flex;
+}
+
+.cardInner {
+  flex: 1;
+  min-width: 0;
+  padding: clamp(12px, 1.6vw, 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.phase,
+.step {
+  font-weight: 700;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  white-space: nowrap;
+}
+
+.phase {
+  color: var(--syrus-bone);
+  border: 1px solid var(--syrus-seam);
+}
+
+.step {
+  color: var(--syrus-void);
+  background: var(--syrus-yellow);
+  font-variant-numeric: tabular-nums;
+}
+
+.date {
+  font-weight: 700;
+  font-size: clamp(1.25rem, 2.3vw, 1.75rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--syrus-holo);
+  line-height: 1.1;
+}
+
+.tba {
+  color: var(--syrus-rebel);
+}
+
+.title {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  line-height: 1.2;
+  color: var(--syrus-bone);
+  text-wrap: balance;
+}
+
+.desc {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--syrus-dim);
+  max-width: 52ch;
+}
+
+/* card text builds in line by line each time BB-8 arrives at a stop */
+.reveal {
+  animation: reveal 0.55s var(--syrus-ease-scan) both;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes reveal {
   from {
     opacity: 0;
-    transform: translateY(-40px);
+    transform: translateY(10px);
+    clip-path: inset(0 100% 0 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
+    clip-path: inset(0 0 0 0);
   }
 }
 
-@keyframes floatAndGlow {
-  0%,
-  100% {
-    transform: translateY(0px);
-    box-shadow: 0 0 15px rgba(151, 145, 150, 0.4);
-  }
-  50% {
-    transform: translateY(-10px);
-    box-shadow:
-      0 0 25px rgba(151, 145, 150, 0.6),
-      0 0 35px rgba(151, 145, 150, 0.3);
-  }
-}
-
-/* ================================
-   Vertical Timeline Overrides
-   (higher specificity to avoid !important)
-================================ */
-
-.section.section :global(.vertical-timeline::before) {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-.section.section :global(.vertical-timeline-element-content) {
-  background: transparent;
-  backdrop-filter: none;
-  border-radius: 8px;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  transition: transform 0.35s ease;
-}
-
-.section.section :global(.vertical-timeline-element-content:hover) {
-  transform: scale(1.03);
-}
-
-.section.section :global(.vertical-timeline-element-content h3) {
-  color: #ffffff;
-  font-weight: 700;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-}
-
-.section.section :global(.vertical-timeline-element-content p) {
-  color: #cccccc;
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-.section.section :global(.vertical-timeline-element-content-arrow) {
-  border-right-color: rgba(255, 255, 255, 0.25);
-}
-
-.section.section :global(.vertical-timeline-element-date) {
-  font-family: var(--syrus-primary2-font);
-  color: #ffffff;
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-  opacity: 0.95;
-}
-
-.section.section :global(.vertical-timeline-element-icon) {
-  background: linear-gradient(135deg, #ffffff, #b5b5b5);
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
-  border: none;
-}
-
-/* Desktop: match element height to icon height */
-@media (min-width: 1170px) {
-  .section.section :global(.vertical-timeline-element) {
-    min-height: 60px;
-    margin: 4em 0;
+/* ---------- narrow stages: the card sits above the bottom bar ---------- */
+@media (max-width: 899px) {
+  /* the rail is full width here, so keep it clear of the floating back-to-top button */
+  .bottom {
+    right: calc(var(--m) + 56px);
   }
 
-  .section.section :global(.vertical-timeline-element-content) {
-    min-height: 60px;
+  .railWrap {
+    max-width: none;
   }
 
-  .section.section
-    :global(
-      .vertical-timeline-element-content .vertical-timeline-element-date
-    ) {
-    top: 32px;
-    transform: translateY(-50%);
+  .cardInner {
+    gap: 6px;
+    padding: 10px 14px;
+  }
+
+  .date {
+    font-size: 1.25rem;
+  }
+
+  .title {
+    font-size: 0.95rem;
+  }
+
+  .desc {
+    font-size: 0.8125rem;
+    line-height: 1.4;
   }
 }
 
-/* ================================
-   Step Tag Alignment (desktop only)
-================================ */
-
-@media (min-width: 1170px) {
-  .tagAlignRight {
-    text-align: right;
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .stop + .stop::before {
+    transition: none;
   }
 
-  .tagAlignLeft {
-    text-align: left;
+  .reveal {
+    animation: none;
   }
-}
 
-/* ================================
-   Step Wrapper
-================================ */
-
-.stepWrapper {
-  width: 100%;
-}
-
-/* ================================
-   Step Card
-================================ */
-
-.stepCard {
-  background: rgba(0, 0, 0, 0.6);
-  padding: 18px 22px 22px;
-  border-radius: 6px;
-  position: relative;
-  overflow: hidden;
-  text-align: left;
-}
-
-/* ================================
-   Step Tag
-================================ */
-
-.stepTag {
-  display: inline-block;
-  width: fit-content;
-  background: #f5f5f5;
-  border-top: 8px solid #58cf4b;
-  color: #333333;
-  font-family: var(--syrus-primary-font);
-  font-style: normal;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 4px 20px;
-  margin-bottom: 0px;
-}
-
-/* ================================
-   Step Title
-================================ */
-
-.stepTitle {
-  font-family: var(--syrus-primary2-font);
-  font-style: normal;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #ffffff;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-  letter-spacing: 1px;
-  margin: 6px 0 8px;
-}
-
-/* ================================
-   Step Description
-================================ */
-
-.stepDescription {
-  font-family: var(--syrus-primary2-font);
-  font-style: normal;
-  font-size: 1.25rem;
-  line-height: 1;
-  letter-spacing: 0.5px;
-  color: #f2f2f2;
-  margin: 6px 0 8px;
-}
-
-/* ================================
-   Step Date
-================================ */
-
-.stepDate {
-  font-size: 0.9rem;
-  font-family: var(--syrus-primary-font);
-  font-style: normal;
-  color: #f2f2f2;
-  opacity: 0.9;
-}
-
-/* ================================
-   Mobile
-================================ */
-
-@media (max-width: 600px) {
-  .dayHeading {
-    font-size: 2.2rem;
-  }
-  .dayDate {
-    font-size: 1.6rem;
-  }
-  .section.section :global(.vertical-timeline-element-content h3) {
-    font-size: 1.4rem;
-  }
-  .section.section :global(.vertical-timeline-element-date) {
-    font-size: 1.4rem;
-    min-height: 36px;
+  .row,
+  .reel,
+  .thumb {
+    transition: none;
   }
 }

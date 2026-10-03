@@ -1,0 +1,135 @@
+/* "May the Force be with you": tall scroll track + sticky full-screen stage. */
+/* Overlaps the end of Tracks and the start of the FAQ (margins set from JS), so
+   it must not block clicks on whatever is underneath. */
+.track {
+  position: relative;
+  z-index: 1;
+  height: 230vh;
+  height: 230svh;
+  pointer-events: none;
+}
+
+/* Darkens the page behind the quote while it is on screen. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--syrus-void-rgb), 0.9);
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+/* Soft light behind the words. */
+.glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(1400px, 150vw);
+  aspect-ratio: 1.7;
+  background: radial-gradient(
+    closest-side,
+    rgba(var(--syrus-yellow-rgb), 0.17),
+    rgba(var(--syrus-holo-rgb), 0.07) 48%,
+    transparent 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Blade of light: white core, cold-blue halo, full screen width. */
+.blade {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #fff 14%,
+    #fff 86%,
+    transparent
+  );
+  box-shadow:
+    0 0 10px 1px rgba(255, 255, 255, 0.9),
+    0 0 26px 5px rgba(var(--syrus-holo-rgb), 0.75),
+    0 0 70px 14px rgba(var(--syrus-holo-rgb), 0.35);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.content {
+  position: relative;
+  padding-inline: var(--syrus-gutter);
+  text-align: center;
+  will-change: transform, opacity;
+}
+
+/* Opened from the middle by the blade (clip-path is set from JS). */
+.reveal {
+  padding-block: 0.12em;
+  will-change: clip-path;
+}
+
+.quote {
+  margin: 0;
+  font-family: var(--syrus-font-primary);
+  font-weight: 400;
+  /* Sized so "may the force" always fits on one line, down to 320px phones. */
+  font-size: clamp(1.45rem, 9.2vw, 6.8rem);
+  line-height: 1.32;
+  letter-spacing: 0.03em;
+  color: var(--syrus-bone);
+  text-shadow: 0 0 18px rgba(var(--syrus-yellow-rgb), 0.18);
+}
+
+.line {
+  display: flex;
+  justify-content: center;
+  gap: 0.34em;
+  white-space: nowrap;
+}
+
+.word {
+  display: inline-block;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.force {
+  color: var(--syrus-yellow);
+  text-shadow:
+    0 0 14px rgba(var(--syrus-yellow-rgb), 0.55),
+    0 0 42px rgba(var(--syrus-yellow-rgb), 0.3);
+}
+
+/* No scroll animation: a plain block showing the finished quote. */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    height: auto;
+    padding-block: var(--syrus-section-y);
+  }
+
+  .stage {
+    position: relative;
+    height: auto;
+  }
+
+  .blade,
+  .glow,
+  .scrim {
+    display: none;
+  }
+}
