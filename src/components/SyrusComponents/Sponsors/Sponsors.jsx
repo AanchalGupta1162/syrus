@@ -36,8 +36,8 @@ const TIERS = [
     size: "md",
     items: [
       { name: "Santosh Gupta", tag: "ML Engineer at Meta", logo: "/sponsors/SantoshGuptaSir.webp" },
-      { name: "Vishal", tag: "Senior Engineer at Microsoft", logo: "/sponsors/VishalSir.webp" },
-      { name: "Ranjeet", logo: "/sponsors/RanjeetSir.webp" },
+      { name: "Vishal Chandwani", tag: "Senior Engineer at Microsoft", logo: "/sponsors/VishalSir.webp" },
+      { name: "Ranjeet Shetye", tag: "MD at Everstream Analytics", logo: "/sponsors/RanjeetSir.webp", objectPosition: "center 20%", imgScale: 1.2 },
     ],
   },
   {
@@ -88,6 +88,10 @@ export default function Sponsors() {
                         decoding="async"
                         width="240"
                         height="240"
+                        style={{
+                          ...(s.objectPosition && { objectPosition: s.objectPosition }),
+                          ...(s.imgScale && { transform: `scale(${s.imgScale})` }),
+                        }}
                       />
                     )}
                   </span>
