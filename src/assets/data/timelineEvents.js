@@ -9,63 +9,68 @@ const DAY2 = "Day 02 · 10th Oct";
 const timelineEvents = [
   {
     title: "Registrations Open",
-    description: "Form your team of 2-4 and register on Unstop.",
+    description:
+      "The registration page goes live with domains, problem statements and how to submit your proposal.",
     date: "5th Oct",
     phase: REG,
   },
   {
     title: "Registrations Close",
-    description: "Last day to lock in your team.",
-    date: "8th Oct",
+    description:
+      "Registration closes at 11:59 PM. The proposal submission form is shared right after.",
+    date: "6th Oct",
     phase: REG,
   },
   {
-    title: "Hackathon Begins",
+    title: "Registration & Grand Opening",
     description:
-      "Onboarding starts at 8:30 AM; the hackathon officially kicks off at 9:30 AM.",
-    date: "08:30 AM",
+      "Check in from 8:00 AM, then the Grand Opening at the Auditorium at 8:30 AM.",
+    date: "08:00 AM",
     phase: DAY1,
   },
   {
-    title: "Problem Statements Revealed",
-    description: "Problem statements for every track go live.",
-    date: "10:00 AM",
+    title: "Hacking Begins",
+    description:
+      "Teams work on their problem statements in the VESIT Library, with lunch from 1:30 PM.",
+    date: "09:30 AM",
     phase: DAY1,
   },
   {
-    title: "Mentoring Round 01",
+    title: "Mentoring Sessions",
     description:
-      "Technical mentors review your progress and provide valuable feedback.",
+      "Mentors review your progress from 2:30 PM. Teams then head home and keep working.",
     date: "02:30 PM",
     phase: DAY1,
   },
   {
-    title: "Submissions",
-    description: "Submit your code for the day.",
-    date: "06:00 PM",
+    title: "Final Submission & Shortlisting",
+    description:
+      "Push your code and presentation by 8:30 PM. The SYRUS team evaluates, and shortlisted teams are emailed by midnight.",
+    date: "08:30 PM",
     phase: DAY1,
   },
   {
-    title: "Shortlisting Round 02",
-    description: "Find out if you are shortlisted for Day 02.",
-    date: "11:59 PM",
-    phase: DAY1,
-  },
-  {
-    title: "Day 02 Begins",
-    description: "Finalists arrive and coding resumes.",
+    title: "Shortlisted Teams Report",
+    description:
+      "Shortlisted teams arrive at 8:30 AM, then refine and optimise until 12:30 PM.",
     date: "08:30 AM",
+    phase: DAY2,
+  },
+  {
+    title: "Final Submission",
+    description: "Push your final code and presentation by 12:30 PM. Lunch follows.",
+    date: "12:30 PM",
     phase: DAY2,
   },
   {
     title: "Judging Round",
-    description: "Final presentations and demos to the judges.",
-    date: "02:30 PM",
+    description: "Present and demo to the judges, then students head home.",
+    date: "01:30 PM",
     phase: DAY2,
   },
   {
-    title: "Closing Ceremony & Prize Distribution",
-    description: "",
+    title: "Result Declaration & Prizes",
+    description: "Results and prize distribution. Time to be decided.",
     date: "TBA",
     phase: DAY2,
   },

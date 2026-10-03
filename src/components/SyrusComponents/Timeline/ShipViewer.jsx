@@ -7,7 +7,7 @@ import styles from "./ShipViewer.module.css";
  * 3D starship viewer. Shows the model for build step `index` and plays a
  * scan-wipe when the step changes. Loaded lazily by Timeline.jsx.
  */
-export default function ShipViewer({ steps, index }) {
+export default function ShipViewer({ steps, index, galaxy, heading }) {
   const hostRef = useRef(null);
   const sceneRef = useRef(null);
   const indexRef = useRef(index);
@@ -17,6 +17,8 @@ export default function ShipViewer({ steps, index }) {
   const [supported] = useState(() => webglAvailable());
 
   indexRef.current = index;
+  const headingRef = useRef(heading);
+  headingRef.current = heading;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -34,12 +36,17 @@ export default function ShipViewer({ steps, index }) {
       return undefined;
     }
     sceneRef.current = api;
+    api.setHeading(headingRef.current.x, headingRef.current.y);
     api.show(indexRef.current);
     return () => {
       api.dispose();
       sceneRef.current = null;
     };
   }, [steps, supported, attempt]);
+
+  useEffect(() => {
+    sceneRef.current?.setHeading(heading.x, heading.y);
+  }, [heading.x, heading.y]);
 
   useEffect(() => {
     sceneRef.current?.show(index);
@@ -55,18 +62,9 @@ export default function ShipViewer({ steps, index }) {
       className={styles.viewer}
       onPointerDown={() => setTouched(true)}
       role="img"
-      aria-label={`Interactive 3D model of the Syrus starship, build step ${index + 1} of ${steps.length}: ${steps[index].label}. Drag to rotate.`}
+      aria-label={`Interactive 3D model of the Syrus starship, build step ${index + 1} of ${steps.length}: ${steps[index].label}, in ${galaxy.name}. Drag to rotate.`}
     >
       <div ref={hostRef} className={styles.host} />
-
-      <div className={styles.caption} aria-hidden="true">
-        <span className={styles.kicker}>
-          Build {String(index + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}
-        </span>
-        <span key={index} className={styles.label}>
-          {steps[index].label}
-        </span>
-      </div>
 
       {!failed && status.loading && (
         <span className={styles.loading} aria-hidden="true">

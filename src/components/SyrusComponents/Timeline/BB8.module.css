@@ -1,0 +1,325 @@
+/* BB-8 rolls on a lane that runs from the first dot's centre to the last. */
+.lane {
+  position: absolute;
+  top: 0;
+  left: calc(100% / (var(--n) * 2));
+  right: calc(100% / (var(--n) * 2));
+  height: 0;
+  pointer-events: none;
+}
+
+.track,
+.fill {
+  position: absolute;
+  top: -1px;
+  height: 2px;
+}
+
+.track {
+  left: 0;
+  right: 0;
+  background: var(--syrus-seam);
+}
+
+/* the lit trail he leaves behind */
+.fill {
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--syrus-holo-rgb), 0.15),
+    var(--syrus-holo)
+  );
+  box-shadow: 0 0 8px rgba(var(--syrus-holo-rgb), 0.7);
+}
+
+.bb8 {
+  --s: var(--bb8-s, clamp(36px, 4.2vw, 50px));
+  position: absolute;
+  bottom: -1px;
+  width: var(--s);
+  height: calc(var(--s) * 1.32);
+  margin-left: calc(var(--s) / -2);
+  --dir: 1;
+}
+
+.bb8[data-dir="-1"] {
+  --dir: -1;
+}
+
+/* hop / squash wrapper; squashes from the ground up */
+.rider {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+}
+
+/* headlight: sweeps out ahead of him while he rolls */
+.beam {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--s) * 0.9);
+  width: calc(var(--s) * 3.4);
+  height: calc(var(--s) * 0.9);
+  transform-origin: 0 50%;
+  transform: scaleX(var(--dir));
+  clip-path: polygon(0 42%, 100% 0, 100% 100%, 0 58%);
+  background: linear-gradient(
+    90deg,
+    rgba(var(--syrus-holo-rgb), 0.5),
+    rgba(var(--syrus-holo-rgb), 0)
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.bb8[data-moving="true"] .beam {
+  opacity: 1;
+}
+
+/* ---------- ball ---------- */
+.ball {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  will-change: transform;
+}
+
+.ball svg,
+.headTilt svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* sphere shading, doesn't rotate with the ball */
+.shade {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.5), transparent 38%),
+    radial-gradient(circle at 50% 50%, transparent 52%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* light on the ground under him */
+.glow {
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 170%;
+  height: 12px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(var(--syrus-holo-rgb), 0.55),
+    transparent 70%
+  );
+  opacity: 0.35;
+  transition: opacity 0.3s ease;
+}
+
+.bb8[data-moving="true"] .glow {
+  opacity: 1;
+}
+
+/* ripple when he arrives at a stop */
+.ping {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px solid var(--syrus-holo);
+  animation: ping 0.7s ease-out forwards;
+}
+
+@keyframes ping {
+  from {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* ---------- head ---------- */
+/* tilt (set from his speed) > bob (idle look-around) > flip (faces travel) */
+.headTilt {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--s) * 0.84);
+  width: calc(var(--s) * 0.62);
+  aspect-ratio: 60 / 38;
+  margin-left: calc(var(--s) * -0.31);
+  transform-origin: 50% 100%;
+}
+
+.bob,
+.flip {
+  width: 100%;
+  height: 100%;
+}
+
+.bob {
+  transform-origin: 50% 100%;
+  animation: look 7s ease-in-out infinite;
+}
+
+.bb8[data-moving="true"] .bob {
+  animation: none;
+}
+
+.flip {
+  transform: translateX(calc(var(--dir) * 7%)) scaleX(var(--dir));
+  transition: transform 0.3s var(--syrus-ease-scan);
+}
+
+@keyframes look {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  18% {
+    transform: rotate(-7deg);
+  }
+  36% {
+    transform: rotate(0);
+  }
+  58% {
+    transform: rotate(6deg);
+  }
+  78% {
+    transform: rotate(0) translateY(-2%);
+  }
+}
+
+.antLong,
+.antShort {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: wiggle 2.4s ease-in-out infinite;
+}
+
+.antShort {
+  animation-duration: 3.1s;
+  animation-delay: -1s;
+}
+
+.bb8[data-moving="true"] .antLong,
+.bb8[data-moving="true"] .antShort {
+  animation-duration: 0.5s;
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+/* ---------- art colours ---------- */
+.skin {
+  fill: var(--syrus-bone);
+}
+
+.orange {
+  fill: var(--syrus-rebel);
+}
+
+.orangeRing {
+  fill: none;
+  stroke: var(--syrus-rebel);
+  stroke-width: 8;
+}
+
+.steel {
+  fill: #3a404b;
+}
+
+.seam {
+  fill: none;
+  stroke: #8b8f98;
+  stroke-width: 1.4;
+}
+
+.antenna {
+  stroke: #8b8f98;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.eyeRing {
+  fill: #12151b;
+  stroke: #4a505c;
+  stroke-width: 1;
+}
+
+.glint {
+  fill: #fff;
+  opacity: 0.85;
+}
+
+/* the lens: glows idle, pulses fast while rolling, blinks now and then */
+.lens {
+  fill: var(--syrus-holo);
+  filter: drop-shadow(0 0 2px var(--syrus-holo));
+  animation: glowIdle 3s ease-in-out infinite;
+}
+
+.bb8[data-moving="true"] .lens {
+  animation: glowRoll 0.45s ease-in-out infinite;
+}
+
+@keyframes glowIdle {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes glowRoll {
+  0%,
+  100% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 2px var(--syrus-holo));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--syrus-holo)) drop-shadow(0 0 10px var(--syrus-holo));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bob,
+  .antLong,
+  .antShort,
+  .lens,
+  .ping {
+    animation: none;
+  }
+
+  .beam {
+    transition: none;
+  }
+
+  .flip {
+    transition: none;
+  }
+}
