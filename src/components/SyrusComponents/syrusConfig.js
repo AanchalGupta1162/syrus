@@ -12,9 +12,9 @@ export const REGISTER_URL =
   import.meta.env.VITE_UNSTOP_REG_FORM_URL || "https://unstop.com";
 
 export const JOIN_GROUP_URL =
-  "https://chat.whatsapp.com/D1lcqTuiNsM4gkqnKHThIH";
+  "https://chat.whatsapp.com/IvA02WUJQvTA4FxPkOl68t";
 
-export const EVENT_DATES = "9th – 10th October";
+export const EVENT_DATES = "9th - 10th October";
 
 /** Scroll position (px) at which the intro has finished and the hero is fully shown. */
 export function getHeroScrollY() {
