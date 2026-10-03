@@ -132,66 +132,190 @@
   transform: none;
 }
 
-.nav {
-  flex: 1;
+.hyperspace {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  max-width: var(--syrus-container);
-  margin: 0 auto;
-  padding: clamp(12px, 4vh, 40px) var(--syrus-gutter) 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  height: 100%;
+  pointer-events: none;
+}
+
+.overlayTop {
+  background: transparent;
+}
+
+/* Saber dial: the blade turns on its hilt and points at links on an arc */
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.pivot {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.tick {
+  position: absolute;
+  top: -1px;
+  height: 2px;
+  border-radius: 1px;
+  transition: background 0.25s ease, box-shadow 0.25s ease, opacity 0.3s ease;
+}
+
+.hiltPart {
+  position: absolute;
+}
+
+.hilt0 {
+  border-radius: 2px 0 0 2px;
+  background: #4a4f59;
+}
+
+.hilt1 {
+  border-radius: 1px;
+  background: linear-gradient(180deg, #5a5e66, #c9ccd2 45%, #6b6f78);
+}
+
+.hilt2 {
+  background: repeating-linear-gradient(90deg, rgba(4, 5, 10, 0.55) 0 2px, rgba(0, 0, 0, 0) 2px 4px);
+}
+
+.hilt3 {
+  border-radius: 2px 3px 3px 2px;
+  background: linear-gradient(180deg, #6b6f78, #e2e4e8 45%, #7b7f88);
+}
+
+.core,
+.glow {
+  position: absolute;
+  left: 0;
+}
+
+.core {
+  top: -2px;
+  height: 4px;
+  border-radius: 2px 3px 3px 2px;
+  background: #fffef5;
+  box-shadow: 0 0 2px 1px #fffbe0, 0 0 8px 2px rgba(var(--syrus-yellow-rgb), 0.9),
+    0 0 30px 7px rgba(var(--syrus-yellow-rgb), 0.26);
+  animation: saberHum 0.42s ease-in-out infinite alternate;
+}
+
+.glow {
+  border-radius: 3px;
+}
+
+.glowTight {
+  top: -2px;
+  height: 4px;
+  background: #fff3a0;
+  box-shadow: 0 0 16px 5px rgba(var(--syrus-yellow-rgb), 0.5);
+}
+
+.glowWide {
+  top: -3px;
+  height: 6px;
+  background: var(--syrus-yellow);
+  box-shadow: 0 0 22px 8px rgba(var(--syrus-yellow-rgb), 0.45);
+}
+
+@keyframes saberHum {
+  from {
+    filter: brightness(0.95);
+  }
+  to {
+    filter: brightness(1.07);
+  }
+}
+
+.tip {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0, rgba(255, 240, 140, 0.85) 25%, rgba(var(--syrus-yellow-rgb), 0) 70%);
+  pointer-events: none;
+}
+
+.nav {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .item {
-  display: grid;
-  grid-template-columns: clamp(40px, 6vw, 72px) 1fr;
-  align-items: baseline;
-  width: 100%;
-  padding: clamp(10px, 2vh, 20px) 0;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: calc(18px * var(--k, 1));
+  padding: 0 calc(40px * var(--k, 1)) 0 0;
   border: 0;
-  border-bottom: 1px solid var(--syrus-seam);
   background: transparent;
   text-align: left;
-  color: var(--syrus-bone);
+  color: #b9b4a6;
   cursor: pointer;
-  opacity: 0;
-  transform: translate3d(0, 14px, 0);
-  transition: color 0.2s ease, opacity 0.5s var(--syrus-ease-scan),
-    transform 0.5s var(--syrus-ease-scan);
-  transition-delay: 0s, 0s, 0s;
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.overlayOpen .item {
-  opacity: 1;
-  transform: none;
-  transition-delay: 0s, calc(var(--i) * 0.05s + 0.12s), calc(var(--i) * 0.05s + 0.12s);
+.itemOn {
+  color: var(--syrus-yellow);
 }
 
 .num {
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   color: var(--syrus-holo);
+  transition: color 0.25s ease;
+}
+
+.itemOn .num {
+  color: var(--syrus-yellow);
 }
 
 .itemLabel {
   font-weight: 700;
-  font-size: clamp(1.9rem, 6.5vw, 4rem);
-  line-height: 1.05;
+  font-size: calc(44px * var(--k, 1));
+  line-height: 1;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  transition: transform 0.25s var(--syrus-ease-scan);
+  white-space: nowrap;
+  transition: color 0.25s ease, text-shadow 0.25s ease;
 }
 
-.item:hover,
-.item:focus-visible {
-  color: var(--syrus-yellow);
+.itemOn .itemLabel {
+  text-shadow: 0 0 22px rgba(var(--syrus-yellow-rgb), 0.42);
 }
 
-.item:hover .itemLabel,
-.item:focus-visible .itemLabel {
-  transform: translateX(10px);
+.overlayActions {
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+.cta {
+  display: none;
+}
+
+.burger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.burger span {
+  width: 16px;
+  height: 2px;
+  background: currentColor;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menuBtn:hover .burgerMid,
+.menuBtn:focus-visible .burgerMid {
+  background: #fffbe0;
+  box-shadow: 0 0 6px 1px var(--syrus-yellow);
 }
 
 @media (max-width: 560px) {
@@ -210,6 +334,49 @@
     display: none;
   }
 
+  /* touch: no hover, so the saber-lit middle bar is always on */
+  .burger {
+    gap: 5px;
+  }
+
+  .burger span {
+    width: 18px;
+  }
+
+  .burgerMid {
+    background: #fffbe0;
+    box-shadow: 0 0 6px 1px var(--syrus-yellow);
+  }
+
+  .item {
+    padding-right: 8px;
+  }
+
+  .itemLabel {
+    font-size: calc(22px * var(--k, 1));
+  }
+
+  .overlayActions {
+    display: none;
+  }
+
+  .cta {
+    display: block;
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: calc(28px + env(safe-area-inset-bottom));
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .ctaOn {
+    opacity: 1;
+    transform: none;
+    transition-delay: 1.3s;
+  }
+
   .logo {
     font-size: 1.35rem;
   }
@@ -219,7 +386,10 @@
   .bar,
   .menuBtn,
   .overlay,
-  .item {
+  .item,
+  .tick,
+  .core {
     transition: none;
+    animation: none;
   }
 }
