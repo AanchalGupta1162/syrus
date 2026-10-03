@@ -147,8 +147,9 @@ Layout: a tall scroll track holds a sticky stage (heading + stage pinned under t
   below are dimmed (about 62%) and slightly smaller. The column glides with the scroll
   (an eased follower, so it never snaps), a thin indicator on its edge shows where you
   are among the 10, and clicking a card jumps to it.
-- Screens below 900px stack the ship over the card column (compact cards: the top row
-  and then the description drop out as the cards get shorter).
+- Screens below 900px (phones, small tablets) have **no 3D ship**: the galaxy glows
+  above a taller card column, and the 3D viewer code and models are never downloaded
+  there. Cards drop the top row and then the description if they get too short.
 
 Behaviour:
 - The active stop comes from **native scroll progress**, with no scroll
@@ -178,6 +179,21 @@ To swap or add a model, replace the file in `public/spaceship-3d-models/`. The
 model count must equal the number of timeline events (10).
 
 Keeping it light:
+- **Galaxy backdrop** (`Timeline/Starfield.jsx`, screens 900px and wider): each galaxy
+  (450 to 2,500 stars) is drawn once into an off-screen picture and then drawn with a
+  single `drawImage` per frame, with the tilt / squash / spin applied as a canvas
+  transform. Only the ~60 to 90 bright four-point glints are drawn live, so they still
+  twinkle. It redraws at about 30 fps while a galaxy sits still (full rate while flying
+  between stops).
+- **Phones** (below 900px) have no galaxy canvas at all, just a still colour glow behind
+  the cards (it was the main cause of lag on weaker phones). BB-8's always-on idle
+  animations (head sway, antenna wiggle, lens glow) are off there too; he still rolls
+  and hops. The card column restyles only the three visible cards while scrolling.
+- **Page-wide starfield** (`Starfield/Starfield.jsx`): phones and low-end devices redraw
+  it at about 30 fps and at 1x pixel density, and on phones it holds still while the
+  Timeline is on screen. The intro's hyperspace streaks still get every frame.
+- Phones also don't show the 3D ship, so the viewer code and models are never
+  downloaded there.
 - The viewer is **lazy-loaded** (`React.lazy`) and only mounted when the section
   is within about 800px of the viewport. Only the current model and the next one
   are fetched.

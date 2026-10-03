@@ -73,7 +73,7 @@ export default function Starfield() {
       s: rand(0.6, 2.4),
       p: rand(0, TAU),
       c: COLORS[(Math.random() * COLORS.length) | 0],
-    }));
+    })).map((s) => ({ ...s, f: `rgb(${s.c})` })); // colour string built once, not every frame
 
     // A few larger "shining" stars with a four-point glint.
     const glintCount = small() ? 6 : 12;
@@ -100,7 +100,8 @@ export default function Starfield() {
     let nextShot = performance.now() + rand(3000, 7000);
 
     const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      // Phones draw at 1x: the stars are tiny, and it cuts the pixels to paint by half or more.
+      dpr = Math.min(window.devicePixelRatio || 1, small() ? 1 : 1.5);
       const nw = window.innerWidth;
       const nh = window.innerHeight;
       // Ignore small height changes (mobile browser bars show/hide).
@@ -124,7 +125,7 @@ export default function Starfield() {
       for (const s of stars) {
         const tw = reduceMotion ? 0.8 : 0.55 + 0.45 * Math.sin(t * s.s + s.p);
         ctx.globalAlpha = s.a * tw * dim;
-        ctx.fillStyle = `rgb(${s.c})`;
+        ctx.fillStyle = s.f;
         if (s.r < 0.9) {
           ctx.fillRect(s.x * w, s.y * h, s.r * 1.6, s.r * 1.6);
         } else {
@@ -220,12 +221,48 @@ export default function Starfield() {
       ctx.globalAlpha = 1;
     }
 
+    // On phones and low-end devices the twinkle is redrawn every other frame (about
+    // 30 fps); it is slow enough that nobody can tell. The intro's hyperspace streaks
+    // (warp > 0) still get every frame.
+    const capped = small() || lowEnd;
+
+    // On phones the page-wide stars hold still while the Timeline is on screen: that
+    // section already has plenty moving (scrolling cards, BB-8), and a full-screen
+    // canvas repainting behind it is what makes it stutter. The stars stay visible.
+    let holdStill = false;
+    let stillDrawn = false;
+    let timelineIO = null;
+    let lookups = 0;
+    const watchTimeline = () => {
+      if (timelineIO || !small()) return;
+      const el = document.getElementById("timeline");
+      if (!el) {
+        lookups += 1;
+        return;
+      }
+      timelineIO = new IntersectionObserver(([entry]) => {
+        holdStill = entry.isIntersecting;
+        stillDrawn = false;
+      });
+      timelineIO.observe(el);
+    };
+
     const frame = (now) => {
       if (!running) return;
+      raf = requestAnimationFrame(frame);
+      if (!timelineIO && lookups < 40 && small()) watchTimeline();
+      if (holdStill && starState.warp < 0.004) {
+        if (!stillDrawn) {
+          stillDrawn = true;
+          last = now;
+          draw(now, 0.016);
+        }
+        return;
+      }
+      if (capped && starState.warp < 0.004 && last && now - last < 30) return;
       const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
       last = now;
       draw(now, dt);
-      raf = requestAnimationFrame(frame);
     };
 
     const onVisibility = () => {
@@ -247,6 +284,7 @@ export default function Starfield() {
     return () => {
       running = false;
       cancelAnimationFrame(raf);
+      timelineIO?.disconnect();
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVisibility);
     };

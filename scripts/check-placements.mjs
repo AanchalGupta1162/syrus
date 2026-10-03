@@ -40,16 +40,19 @@ for (const [w, h] of SIZES) {
   for (const [i, g] of galaxies.entries()) {
     const at = `${at0} galaxy ${i + 1}`;
     const p = placements(w, h, g.layout);
-    if (p.ship.x < 0 || p.ship.y < 0 || p.ship.x + p.ship.w > w + 0.5 || p.ship.y + p.ship.h > usable + 0.5) {
-      errors.push(`${at}: ship leaves its area (${JSON.stringify(p.ship)}) usable=${usable}`);
+    // Narrow screens draw no ship (only a nominal rect is returned), so skip these there.
+    if (!cards.stacked) {
+      if (p.ship.x < 0 || p.ship.y < 0 || p.ship.x + p.ship.w > w + 0.5 || p.ship.y + p.ship.h > usable + 0.5) {
+        errors.push(`${at}: ship leaves its area (${JSON.stringify(p.ship)}) usable=${usable}`);
+      }
+      if (overlap(p.ship, cards)) errors.push(`${at}: ship overlaps the card column`);
+      if (p.ship.w < 120 || p.ship.h < 100) errors.push(`${at}: ship too small ${p.ship.w}x${p.ship.h}`);
     }
-    if (overlap(p.ship, cards)) errors.push(`${at}: ship overlaps the card column`);
-    if (p.ship.w < 120 || p.ship.h < 100) errors.push(`${at}: ship too small ${p.ship.w}x${p.ship.h}`);
     if (p.star.x < 0 || p.star.x > w || p.star.y < 0 || p.star.y > usable) {
       errors.push(`${at}: star off stage (${p.star.x}, ${p.star.y})`);
     }
     if (!cards.stacked && p.star.x + 60 > cards.x) errors.push(`${at}: star hides behind the card column`);
-    if (cards.stacked && p.star.y > cards.y) errors.push(`${at}: star is below the top of the card column`);
+    if (cards.stacked && p.star.y >= cards.y) errors.push(`${at}: star is below the top of the card column`);
   }
 }
 
