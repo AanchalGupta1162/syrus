@@ -15,34 +15,63 @@ export const bottomZone = (w) => 124;
 const STAR_ROW = { high: 0.3, mid: 0.44, low: 0.58 };
 const STACKED_STAR_ROW = { high: 0.2, mid: 0.27, low: 0.34 };
 
-// The schedule panel shows this many dates at a time, each this tall (px).
-export const SCHEDULE_ROWS = 3;
-export const SCHEDULE_ROW_H = 76;
-
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const round = (r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, Math.round(v)]));
+
+/**
+ * The column of timeline cards. Exactly three cards are visible at a time (previous,
+ * current, next), so the column is three cards tall. Wide stages put it on the right
+ * edge, centred in the usable height; narrow stages put it full width just above the
+ * bottom strip, under the ship.
+ * @returns {{ x:number, y:number, w:number, h:number, cardH:number, gap:number, stacked:boolean }}
+ */
+export function cardsRect(w, h) {
+  const m = clamp(w * 0.03, 12, 48);
+  const usable = h - bottomZone(w);
+
+  if (w < 900) {
+    const gap = 8;
+    const cardH = clamp(Math.floor((usable * 0.6 - 2 * gap) / 3), 82, 124);
+    const ch = 3 * cardH + 2 * gap;
+    return { x: m, y: Math.round(usable - ch), w: Math.round(w - 2 * m), h: ch, cardH, gap, stacked: true };
+  }
+
+  const gap = 14;
+  const cw = clamp(w * 0.34, 340, 520);
+  const cardH = clamp(Math.floor((usable - 12 - 2 * gap) / 3), 116, 200);
+  const ch = 3 * cardH + 2 * gap;
+  return {
+    x: Math.round(w - m - cw),
+    y: Math.round(Math.max(8, (usable - ch) / 2)),
+    w: Math.round(cw),
+    h: ch,
+    cardH,
+    gap,
+    stacked: false,
+  };
+}
 
 /**
  * @param {number} w stage width
  * @param {number} h stage height
  * @param {{ ship: "left"|"right", card: "high"|"mid"|"low" }} layout
- * @returns {{ ship: Rect, card: Rect, star: {x:number,y:number} }}
- *   Rect = { x, y, w, h } (top-left origin). The card's `h` is only an estimate of
- *   its tallest text (the card sizes itself to its text); it keeps the card clear of
- *   the ship, the panel and the bottom bar. `ship` is the side the ship parks on,
- *   the star sits between the ship and the card, and the card sits beside the star.
+ * @returns {{ ship: Rect, star: {x:number,y:number} }}
+ *   Rect = { x, y, w, h } (top-left origin). The ship parks on the side `layout.ship`
+ *   of the free area (everything left of the card column on wide stages, everything
+ *   above it on narrow ones). The galaxy's star sits on the inner side of the ship,
+ *   at the height `layout.card` (kept from the old layout so each galaxy keeps its place).
  */
 export function placements(w, h, layout) {
   const m = clamp(w * 0.03, 12, 48);
   const usable = h - bottomZone(w);
   const onLeft = layout.ship === "left";
+  const cards = cardsRect(w, h);
 
-  if (w < 900) {
-    // Stacked: star and ship above, card just above the bottom strip.
-    const cardH = clamp(usable * 0.38, 120, 200);
-    const area = usable - cardH - 8;
+  if (cards.stacked) {
+    // Stacked: star and ship above, the cards just above the bottom strip.
+    const area = cards.y - 8;
     const shipW = Math.min(w - 2 * m, 440);
-    const shipH = Math.max(110, area * 0.62);
+    const shipH = Math.max(100, area * 0.72);
     const starX = onLeft ? w * 0.3 : w * 0.7;
     return {
       ship: round({
@@ -51,19 +80,15 @@ export function placements(w, h, layout) {
         w: shipW,
         h: shipH,
       }),
-      card: round({ x: m, y: usable - cardH, w: w - 2 * m, h: cardH }),
       star: { x: Math.round(starX), y: Math.round(area * STACKED_STAR_ROW[layout.card]) },
     };
   }
 
-  // Wide stages: the schedule panel takes the right edge, everything else sits to its left.
-  const panel = panelRect(w, h);
-  const right = panel.x - clamp(w * 0.02, 16, 32); // right edge of the ship/star/card area
+  // Wide stages: the card column takes the right edge, everything else sits to its left.
+  const right = cards.x - clamp(w * 0.02, 16, 32); // right edge of the ship / star area
   const iw = right - m;
   const shipW = clamp(iw * 0.4, 280, 560);
   const shipH = clamp(usable * 0.82, 150, 500);
-  const cardW = clamp(iw * 0.27, 270, 340);
-  const cardH = clamp(usable * 0.55, 170, 260);
   const starX = m + (onLeft ? 0.57 : 0.43) * iw;
   const starY = STAR_ROW[layout.card] * usable;
   const shipCy = clamp(starY + usable * 0.06, shipH / 2, usable - shipH / 2);
@@ -74,28 +99,8 @@ export function placements(w, h, layout) {
       w: shipW,
       h: shipH,
     }),
-    card: round({
-      x: onLeft ? right - cardW : m,
-      y: clamp(starY - cardH / 2, 0, usable - cardH),
-      w: cardW,
-      h: cardH,
-    }),
     star: { x: Math.round(starX), y: Math.round(starY) },
   };
-}
-
-/**
- * The schedule panel on the right edge (wide stages only; null on narrow ones, where
- * the dots along the bottom do the job). It shows SCHEDULE_ROWS dates at a time and
- * sits in the middle of the usable height.
- */
-export function panelRect(w, h) {
-  if (w < 900) return null;
-  const m = clamp(w * 0.03, 12, 48);
-  const pw = clamp(w * 0.17, 190, 240);
-  const ph = SCHEDULE_ROW_H * SCHEDULE_ROWS + 20;
-  const usable = h - bottomZone(w);
-  return round({ x: w - m - pw, y: Math.max(12, (usable - ph) / 2), w: pw, h: ph });
 }
 
 /**

@@ -137,14 +137,18 @@ A **starship that builds itself** as you scroll. There are 10 stops and 10 3D
 models (`public/spaceship-3d-models/dread_step01…10_*.glb`, one per stop,
 about 7.5 MB in total). Stop *n* always shows model *n*.
 
-Layout: a tall scroll track holds a sticky stage with two panels.
-- **Viewer panel**: the 3D ship on a faint hologram base, a caption
-  ("Build 05 / 10 · Superstructure"), a "Drag to rotate" hint, and a **stop rail**
-  of 10 numbered dots (done = cyan, current = yellow). Clicking a dot jumps there.
-- **Card**: phase chip, "Stop 05 / 10", date/time, title, description and
-  Prev / Next.
-- Phones and tablets stack viewer over card; screens ≥ 960px (and short
-  landscape phones) put them side by side.
+Layout: a tall scroll track holds a sticky stage (heading + stage pinned under the nav).
+- **Left / centre**: the starfield for the current galaxy, the 3D ship, and BB-8's
+  **stop rail** of 10 numbered dots along the bottom (done = cyan, current = yellow).
+  Clicking a dot jumps there.
+- **Right: card column** showing exactly **three cards** at a time (previous, current,
+  next). Each card has the phase, the date and time, the title and a short description.
+  The centre card is the current one (yellow outline, full opacity); the cards above and
+  below are dimmed (about 62%) and slightly smaller. The column glides with the scroll
+  (an eased follower, so it never snaps), a thin indicator on its edge shows where you
+  are among the 10, and clicking a card jumps to it.
+- Screens below 900px stack the ship over the card column (compact cards: the top row
+  and then the description drop out as the cards get shorter).
 
 Behaviour:
 - The active stop comes from **native scroll progress**, with no scroll
@@ -152,20 +156,21 @@ Behaviour:
 - When the stop changes, the old model is cut away and the new one is revealed
   behind a moving cyan **scan plane** (about 1.1 s; reversed when going back).
   With `prefers-reduced-motion` it is an instant swap.
-- The ship **auto-rotates slowly** and can be **rotated by hand** (mouse drag or
-  touch). Auto-rotate pauses while you interact and resumes about 2 s later.
-  Zoom and pan are off, and the canvas uses `touch-action: pan-y`, so a vertical
-  swipe on a phone still scrolls the page.
+- The ship **turns to face your cursor** (mouse only, no dragging): it pivots on the
+  spot so its nose points at the pointer, easing between angles. When the cursor
+  leaves the window, and on touch screens, it holds the heading of its flight to the
+  next galaxy instead. Touch never fights page scrolling.
 - Camera distance is fitted to the model's bounding sphere and refitted on resize,
   so the ship is never cropped at any rotation angle.
 
 Where things live:
 | What | File |
 | --- | --- |
-| Stop data (date, title, description) | `src/assets/data/timelineEvents.js` |
+| Stop data (date, time, phase, title, description) | `src/assets/data/timelineEvents.js` |
 | Stop → model mapping and captions | `src/assets/data/shipModels.js` (edit `file` / `label` per stop) |
 | Layout and responsive rules | `Timeline/Timeline.module.css` |
-| Scroll logic, rail, card | `Timeline/Timeline.jsx` |
+| Scroll logic, rail, card column | `Timeline/Timeline.jsx` |
+| Where the ship, star and card column sit (checked by `node scripts/check-placements.mjs`) | `Timeline/journey.js` |
 | Viewer wrapper and overlays | `Timeline/ShipViewer.jsx` + `.module.css` |
 | three.js scene (lights, controls, loader, transition) | `Timeline/shipScene.js` |
 
@@ -281,7 +286,7 @@ that needs to change a button's size/position must out-rank them, e.g.
   available.
 - Touch targets ≥ 44px; visible focus ring (`--syrus-holo`); the menu is a
   labelled modal dialog; FAQ uses buttons with `aria-expanded`.
-- Layout is fluid from 320px up: stacked timeline (viewer over card) and
+- Layout is fluid from 320px up: stacked timeline (viewer over the cards) and
   single-column tracks on phones; side-by-side timeline and 3 + 2 tracks grid on
   desktop. Checked at 360, 390, 768, 844×390 landscape, 1024, 1440 and 1920 wide
   with no horizontal overflow.

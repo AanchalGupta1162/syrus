@@ -1,77 +1,79 @@
 // SYRUS 7.0 timeline. Edit this list to change the timeline section.
-// Each entry: { title, description, date, phase }
-//   date  - shown large on the card (a day or a time; use "TBA" if unknown)
-//   phase - small label on the card ("Registrations", "Day 01 · 9th Oct", ...)
+// Each entry: { title, description, date, time?, phase }
+//   date  - the day, shown large on the card ("5 Oct")
+//   time  - optional, shown next to the date ("8:30 AM – 1:30 PM"); leave out for all-day entries
+//   phase - small label on the card ("Registrations", "Day 01", ...)
+// Keep this list the same length as galaxies.js and shipModels.js (one stop each).
 const REG = "Registrations";
-const DAY1 = "Day 01 · 9th Oct";
-const DAY2 = "Day 02 · 10th Oct";
+const DAY1 = "Day 01";
+const DAY2 = "Day 02";
 
 const timelineEvents = [
   {
     title: "Registrations Open",
-    description:
-      "The registration page goes live with domains, problem statements and how to submit your proposal.",
-    date: "5th Oct",
+    description: "Registrations go live. Form your team and apply to take part in Syrus 7.0.",
+    date: "5 Oct",
     phase: REG,
   },
   {
-    title: "Registrations Close",
-    description:
-      "Registration closes at 11:59 PM. The proposal submission form is shared right after.",
-    date: "6th Oct",
+    title: "Registrations Close & PS Allotment",
+    description: "Registrations close and problem statements are allotted to the teams.",
+    date: "6 Oct",
     phase: REG,
   },
   {
-    title: "Registration & Grand Opening",
-    description:
-      "Check in from 8:00 AM, then the Grand Opening at the Auditorium at 8:30 AM.",
-    date: "08:00 AM",
+    title: "POC Submission & Day 1 Shortlisting",
+    description: "Submit your proof of concept. The teams shortlisted for Day 1 are announced.",
+    date: "7 Oct",
+    phase: "Shortlisting",
+  },
+  {
+    title: "Grand Opening & Coding Period",
+    description: "Syrus 7.0 kicks off with the Grand Opening, followed by the first coding period.",
+    date: "9 Oct",
+    time: "8:30 AM - 1:30 PM",
     phase: DAY1,
   },
   {
-    title: "Hacking Begins",
-    description:
-      "Teams work on their problem statements in the VESIT Library, with lunch from 1:30 PM.",
-    date: "09:30 AM",
+    title: "Lunch",
+    description: "A break to eat and recharge before the mentoring round.",
+    date: "9 Oct",
+    time: "1:30 PM - 2:30 PM",
     phase: DAY1,
   },
   {
-    title: "Mentoring Sessions",
-    description:
-      "Mentors review your progress from 2:30 PM. Teams then head home and keep working.",
-    date: "02:30 PM",
+    title: "Mentoring Round & Submission",
+    description: "Mentors review your progress, then teams make their Day 1 submission.",
+    date: "9 Oct",
+    time: "2:30 PM - 4:30 PM",
     phase: DAY1,
   },
   {
-    title: "Final Submission & Shortlisting",
-    description:
-      "Push your code and presentation by 8:30 PM. The SYRUS team evaluates, and shortlisted teams are emailed by midnight.",
-    date: "08:30 PM",
+    title: "Day 2 Shortlist Announced",
+    description: "The teams shortlisted to move on to Day 2 are announced.",
+    date: "9 Oct",
+    time: "11:59 PM",
     phase: DAY1,
   },
   {
-    title: "Shortlisted Teams Report",
-    description:
-      "Shortlisted teams arrive at 8:30 AM, then refine and optimise until 12:30 PM.",
-    date: "08:30 AM",
+    title: "Coding Period & Final Submission",
+    description: "Shortlisted teams keep building and make their final submission.",
+    date: "10 Oct",
+    time: "8:30 AM - 12:30 PM",
     phase: DAY2,
   },
   {
-    title: "Final Submission",
-    description: "Push your final code and presentation by 12:30 PM. Lunch follows.",
-    date: "12:30 PM",
+    title: "Lunch",
+    description: "A break to eat and recharge before judging begins.",
+    date: "10 Oct",
+    time: "12:30 PM - 1:30 PM",
     phase: DAY2,
   },
   {
     title: "Judging Round",
-    description: "Present and demo to the judges, then students head home.",
-    date: "01:30 PM",
-    phase: DAY2,
-  },
-  {
-    title: "Result Declaration & Prizes",
-    description: "Results and prize distribution. Time to be decided.",
-    date: "TBA",
+    description: "Teams present and demo their projects to the judges.",
+    date: "10 Oct",
+    time: "1:30 PM - 4:30 PM",
     phase: DAY2,
   },
 ];
