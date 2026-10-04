@@ -43,10 +43,13 @@ export default function ShipViewer({ steps, index, galaxy, heading }) {
     api.setHeading(headingRef.current.x, headingRef.current.y);
     api.show(indexRef.current);
 
-    // The ship turns to face the mouse. Touch screens have no cursor, so they keep the
-    // flight heading; leaving the window hands control back to it too.
+    // The ship turns only after the mouse actually moves. Browsers can emit a
+    // zero-delta pointer event for a stationary cursor while the page scrolls or
+    // layout changes; that must not override the initial galaxy-facing heading.
+    // Touch screens keep the flight heading, and leaving the window restores it.
     const onMove = (e) => {
       if (e.pointerType && e.pointerType !== "mouse") return;
+      if (e.movementX === 0 && e.movementY === 0) return;
       api.setPointer(e.clientX, e.clientY);
       setMoved(true);
     };
