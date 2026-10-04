@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import "./Matrix.css";
 
 class Symbol {
@@ -57,8 +57,8 @@ const Matrix = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    let width = (canvas.width = window.innerWidth + 20);
-    let height = (canvas.height = window.innerHeight + 500);
+    canvas.width = window.innerWidth + 20;
+    canvas.height = window.innerHeight + 500;
     const effect = new Effect(canvas.width, canvas.height);
 
     // Gradient
@@ -98,19 +98,26 @@ const Matrix = () => {
       } else {
         timer += deltaTime;
       }
-      requestAnimationFrame(animate);
+      animationFrame = requestAnimationFrame(animate);
     }
+    let animationFrame;
     animate(0);
 
-    window.addEventListener("resize", function () {
+    const onResize = () => {
       if (canvas.width != window.innerWidth) {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         effect.resize(canvas.width, canvas.height);
       }
-    });
+    };
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
-  return <canvas className="matrix-canvas" ref={canvasRef}></canvas>;
+  return <canvas className="matrix-canvas" ref={canvasRef} aria-hidden="true"></canvas>;
 };
 
 export default Matrix;

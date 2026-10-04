@@ -1,9 +1,10 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import "./Team.css";
 import CodecellNav from "../../components/Navbar/Navbar";
 import Card from "../../components/misc/Card/Card";
 import Footer from "../../components/Footer/Footer";
 import ScrollToTopButton from "../../components/misc/ScrollToTop/ScrollToTop";
+import Matrix from "../../components/MatrixRainingCode/Matrix";
 import faculty from "../../assets/data/faculty.json";
 import be from "../../assets/data/be.json";
 import te from "../../assets/data/te.json";
@@ -15,18 +16,6 @@ const GROUPS = [
   { id: "te", title: "TE Members", members: te },
   { id: "se", title: "SE Members", members: se },
 ];
-
-// Static "matrix" columns behind the hero, echoing the home page's code rain.
-const MATRIX_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ<>/$@#&*{}~";
-const MATRIX_SHADES = ["a", "b", "c"];
-const MATRIX = Array.from({ length: 52 }, (_, c) => {
-  const len = 10 + ((c * 7) % 14);
-  let text = "";
-  for (let i = 0; i < len; i++) {
-    text += MATRIX_CHARS[(c * 31 + i * 17 + ((c * i) % 11)) % MATRIX_CHARS.length] + "\n";
-  }
-  return { text, shade: MATRIX_SHADES[(c * 5) % 3] };
-});
 
 const Chevron = () => (
   <svg className="team-acc-chev" viewBox="0 0 8 6" aria-hidden="true">
@@ -57,17 +46,11 @@ const Team = () => {
 
   return (
     <div id="team">
+      <Matrix />
       <ScrollToTopButton />
       <CodecellNav />
 
       <section className="team-hero">
-        <div className="team-matrix" aria-hidden="true">
-          {MATRIX.map((col, i) => (
-            <div key={i} className={`team-matrix-col shade-${col.shade}`}>
-              {col.text}
-            </div>
-          ))}
-        </div>
         <div className="team-wrap team-hero-inner">
           {/* Single line on wide screens, stacked on phones; both type themselves out. */}
           <h1 className="team-title team-title-line" aria-label="Meet the CodeCell++ Team">
