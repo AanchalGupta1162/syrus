@@ -256,8 +256,8 @@
 /* ── Stormtrooper accent ── */
 .trooperWrap {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  right: 30px;
+  bottom: 10%;
   height: 60%;
   pointer-events: none;
   z-index: 1;
