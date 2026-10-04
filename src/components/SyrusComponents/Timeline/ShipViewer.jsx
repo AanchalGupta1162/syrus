@@ -12,7 +12,11 @@ export default function ShipViewer({ steps, index, galaxy, heading }) {
   const sceneRef = useRef(null);
   const indexRef = useRef(index);
   const [status, setStatus] = useState({ loading: true, error: false });
-  const [touched, setTouched] = useState(false);
+  const [moved, setMoved] = useState(false);
+  // Only devices with a mouse can point the ship, so only they get the hint.
+  const [hasMouse] = useState(
+    () => typeof window.matchMedia === "function" && window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+  );
   const [attempt, setAttempt] = useState(0);
   const [supported] = useState(() => webglAvailable());
 
@@ -38,7 +42,25 @@ export default function ShipViewer({ steps, index, galaxy, heading }) {
     sceneRef.current = api;
     api.setHeading(headingRef.current.x, headingRef.current.y);
     api.show(indexRef.current);
+
+    // The ship turns only after the mouse actually moves. Browsers can emit a
+    // zero-delta pointer event for a stationary cursor while the page scrolls or
+    // layout changes; that must not override the initial galaxy-facing heading.
+    // Touch screens keep the flight heading, and leaving the window restores it.
+    const onMove = (e) => {
+      if (e.pointerType && e.pointerType !== "mouse") return;
+      if (e.movementX === 0 && e.movementY === 0) return;
+      api.setPointer(e.clientX, e.clientY);
+      setMoved(true);
+    };
+    const onLeave = () => api.setPointer(null);
+    window.addEventListener("pointermove", onMove, { passive: true });
+    document.documentElement.addEventListener("mouseleave", onLeave);
+    window.addEventListener("blur", onLeave);
     return () => {
+      window.removeEventListener("pointermove", onMove);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+      window.removeEventListener("blur", onLeave);
       api.dispose();
       sceneRef.current = null;
     };
@@ -60,9 +82,8 @@ export default function ShipViewer({ steps, index, galaxy, heading }) {
   return (
     <div
       className={styles.viewer}
-      onPointerDown={() => setTouched(true)}
       role="img"
-      aria-label={`Interactive 3D model of the Syrus starship, build step ${index + 1} of ${steps.length}: ${steps[index].label}, in ${galaxy.name}. Drag to rotate.`}
+      aria-label={`3D model of the Syrus starship, build step ${index + 1} of ${steps.length}: ${steps[index].label}, in ${galaxy.name}. The ship turns to face your cursor.`}
     >
       <div ref={hostRef} className={styles.host} />
 
@@ -72,9 +93,9 @@ export default function ShipViewer({ steps, index, galaxy, heading }) {
         </span>
       )}
 
-      {!failed && !touched && !status.loading && (
+      {!failed && hasMouse && !moved && !status.loading && (
         <span className={styles.hint} aria-hidden="true">
-          Drag to rotate
+          Move your cursor
         </span>
       )}
 

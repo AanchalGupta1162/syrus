@@ -4,8 +4,9 @@
  *  - Shows one of the 10 build-step models at a time.
  *  - Changing step crossfades to the next model (the new one fades in and grows
  *    in slightly), so each added part is clearly noticeable.
- *  - Auto-rotates by orbiting the camera; the visitor can drag to rotate.
- *    Zoom is off and touch uses `pan-y`, so the page always keeps scrolling.
+ *  - The ship turns on the spot to point at the visitor's cursor (setPointer). With no
+ *    mouse (touch screens, cursor outside the window) it holds its flight heading
+ *    instead (setHeading). There is no dragging, so touch never fights page scroll.
  *  - Renders only while visible, DPR capped, models are loaded on demand.
  */
 import {
@@ -25,7 +26,6 @@ import {
   WebGLRenderer,
 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
 const HOLO = 0x5fd4f0;
@@ -95,31 +95,9 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
   camera.add(rim, rimTarget);
   rim.target = rimTarget;
 
-  /* ---------- controls ---------- */
-  const controls = new OrbitControls(camera, canvas);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.07;
-  controls.enableZoom = false;
-  controls.enablePan = false;
-  controls.rotateSpeed = 0.7;
-  // The ship holds a heading (see setHeading) instead of spinning; dragging still orbits.
-  controls.autoRotate = false;
-  controls.minPolarAngle = Math.PI * 0.12;
-  controls.maxPolarAngle = Math.PI * 0.62;
-  // OrbitControls sets touch-action:none; let vertical swipes scroll the page.
-  canvas.style.touchAction = "pan-y";
-
-  let resumeTimer = 0;
-  controls.addEventListener("start", () => {
-    controls.autoRotate = false;
-    clearTimeout(resumeTimer);
-  });
-  controls.addEventListener("end", () => {
-    clearTimeout(resumeTimer);
-    resumeTimer = window.setTimeout(() => {
-      controls.autoRotate = false;
-    }, 2200);
-  });
+  /* ---------- camera ---------- */
+  // Fixed camera looking at the middle of the model (set in applyBounds / fit).
+  const target = new Vector3();
 
   /* ---------- heading ---------- */
   // The models' nose points along +z. pivot sits on the model's centre and turns
@@ -131,6 +109,9 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
   let yaw = 0;
   let yawTarget = 0;
   let yawSet = false;
+  let headingYaw = 0; // where the flight is heading (used when there is no cursor)
+  let pointer = null; // last mouse position { x, y } in client pixels, or null
+  let aimYaw = null; // yaw towards the cursor, when there is one
 
   /* ---------- state ---------- */
   const loader = new GLTFLoader();
@@ -156,7 +137,7 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
       maxX: box.max.x,
       minY: box.min.y,
     };
-    controls.target.copy(center);
+    target.copy(center);
     pivot.position.set(center.x, 0, center.z);
     holder.position.set(-center.x, 0, -center.z);
 
@@ -176,12 +157,11 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
     const half = Math.min(vfov, hfov) / 2;
     const dist = (bounds.radius / Math.sin(half)) * 0.97;
-    const dir = camera.position.clone().sub(controls.target).normalize();
-    camera.position.copy(controls.target).addScaledVector(dir, dist);
-    controls.minDistance = controls.maxDistance = dist;
+    const dir = camera.position.clone().sub(target).normalize();
+    camera.position.copy(target).addScaledVector(dir, dist);
     camera.far = dist * 4;
     camera.updateProjectionMatrix();
-    controls.update();
+    camera.lookAt(target);
   }
 
   function resize() {
@@ -343,12 +323,25 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
     const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
     last = now;
     updateTransition(now);
+    // Aim at the cursor from the middle of the viewer (re-read every frame, since the
+    // ship also moves when it flies to the next galaxy and the page scrolls).
+    if (pointer) {
+      const r = container.getBoundingClientRect();
+      const dx = pointer.x - (r.left + r.width / 2);
+      const dy = pointer.y - (r.top + r.height / 2);
+      // Right on top of the ship the angle is meaningless, so keep the last aim.
+      if (dx * dx + dy * dy > 30 * 30) aimYaw = Math.atan2(dx, dy);
+    }
+    yawTarget = pointer && aimYaw !== null ? aimYaw : headingYaw;
     if (yawTarget !== yaw) {
       const diff = Math.atan2(Math.sin(yawTarget - yaw), Math.cos(yawTarget - yaw));
-      yaw = Math.abs(diff) < 0.002 ? yawTarget : yaw + diff * (1 - Math.exp(-dt * 3.5));
+      const rate = pointer ? 8 : 3.5;
+      yaw =
+        reduceMotion || Math.abs(diff) < 0.002
+          ? yawTarget
+          : yaw + diff * (1 - Math.exp(-dt * rate));
       pivot.rotation.y = yaw;
     }
-    controls.update(dt);
     renderer.render(scene, camera);
     raf = requestAnimationFrame(frame);
   }
@@ -400,17 +393,24 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
 
   // Turn the nose to point along the screen direction (dx right, dy down).
   function setHeading(dx, dy) {
-    yawTarget = Math.atan2(dx, dy);
+    headingYaw = Math.atan2(dx, dy);
     if (!yawSet || reduceMotion) {
-      yaw = yawTarget;
+      yaw = pointer && aimYaw !== null ? aimYaw : headingYaw;
       pivot.rotation.y = yaw;
       yawSet = true;
     }
   }
 
+  // Aim at a point in client pixels, or pass null to go back to the flight heading.
+  function setPointer(x, y) {
+    pointer = x === null ? null : { x, y };
+    if (!pointer) aimYaw = null;
+  }
+
   return {
     show,
     setHeading,
+    setPointer,
     dispose() {
       disposed = true;
       isDead = true;
@@ -419,11 +419,9 @@ export function createShipScene(container, { steps, onStatus = () => {} }) {
       canvas.removeEventListener("webglcontextrestored", onRestored);
       running = false;
       cancelAnimationFrame(raf);
-      clearTimeout(resumeTimer);
       io.disconnect();
       ro.disconnect();
       document.removeEventListener("visibilitychange", onVis);
-      controls.dispose();
       scene.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) {

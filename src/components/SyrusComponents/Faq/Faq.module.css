@@ -1,5 +1,9 @@
+.section {
+  overflow: hidden;
+}
+
 .list {
-  max-width: 900px;
+  max-width: min(680px, 60%);
   border-top: 1px solid var(--syrus-seam);
 }
 
@@ -42,7 +46,7 @@
 
 .text {
   font-weight: 600;
-  font-size: clamp(1rem, 1.6vw, 1.125rem);
+  font-size: clamp(0.85rem, 1.3vw, 0.95rem);
   line-height: 1.4;
 }
 
@@ -57,7 +61,6 @@
   transform: rotate(180deg);
 }
 
-/* Smooth height animation without JS measurements */
 .panel {
   display: grid;
   grid-template-rows: 0fr;
@@ -75,7 +78,7 @@
 .a {
   margin: 0;
   padding: 0 4px 22px 48px;
-  font-size: 1rem;
+  font-size: 0.80rem;
   line-height: 1.65;
   color: var(--syrus-dim);
   max-width: 70ch;
@@ -89,6 +92,41 @@
 
   .a {
     padding-left: 36px;
+  }
+}
+
+.character {
+  position: absolute;
+  right: 6%;
+  top: calc(var(--syrus-section-y) + clamp(2.1rem, 6.72vw, 3.9375rem) + 27px + clamp(32px, 5vw, 56px));
+  height: 85%;
+  max-height: 650px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.7;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  filter: drop-shadow(0 0 8px rgba(95, 212, 240, 0.15));
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10%);
+}
+
+@media (max-width: 768px) {
+  .character {
+    display: none;
+  }
+
+  .list {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .character {
+    right: 2%;
+    height: 65%;
+    opacity: 0.6;
   }
 }
 

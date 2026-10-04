@@ -306,6 +306,22 @@
   }
 }
 
+/* Phones: nothing animates while BB-8 sits still (no head sway, antenna wiggle or lens
+   glow, which was an animated SVG filter). He still rolls, hops and squashes. */
+@media (max-width: 899px) {
+  .bob,
+  .antLong,
+  .antShort,
+  .lens,
+  .bb8[data-moving="true"] .lens {
+    animation: none;
+  }
+
+  .lens {
+    filter: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bob,
   .antLong,

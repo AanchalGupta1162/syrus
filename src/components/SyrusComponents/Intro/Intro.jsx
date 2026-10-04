@@ -1,26 +1,42 @@
 import { useEffect, useRef } from "react";
 import { starState } from "../Starfield/Starfield";
 import { scrollToHero } from "../syrusConfig";
+import { createIntroWheelSmoother } from "./introWheelSmoother";
 import styles from "./Intro.module.css";
 
 /**
  * Opening sequence, driven entirely by scrolling (no video):
  *
  *   0.00 – 0.10  "A long time ago…" line
- *   0.09 – 0.25  SYRUS 7.0 title recedes into space
- *   0.20 – 0.80  perspective crawl
+ *   0.07 – 0.13  SYRUS 7.0 title arrives, full screen width
+ *   0.13 – 0.42  title recedes straight back into space
+ *   0.38 – 0.80  perspective crawl
  *   0.70 – 0.89  hyperspace jump (starfield streaks, accelerating)
  *   0.89 – 1.00  flash, then the hero arrives and the stars slow down
+ *
+ * Wheel scrolling inside the intro is eased, and slowed a little when it is
+ * rapid (see introWheelSmoother.js), so a hard flick can't blast through it.
  *
  * `children` is the hero. It lives inside the pinned stage so it is the last
  * frame of the intro, then the page scrolls on normally to the sponsors.
  */
 
 const INTRO_PARAGRAPHS = [
-  "It is a period of rapid innovation. Hidden at VESIT in Chembur, the builders of CodeCell++ have opened the gates to SYRUS 7.0, a two-day hackathon for teams of builders, dreamers and tinkerers.",
-  "Five tracks await: Blockchain, FinTech, Agentic AI, Quantum, and a special mission for first-year students. Choose your mission, assemble your crew and prepare to build.",
+  "It is a period of rapid innovation. At VESIT, the builders of CodeCell++ have opened the gates to SYRUS 7.0: two days of building.",
+  "Two domains await: FinTech and Sustainability. Choose your mission, assemble your crew and build.",
   "On the 9th and 10th of October the galaxy will be watching. Prepare to jump to lightspeed…",
 ];
+
+/** SYRUS 7.0 title timing, as intro progress ranges (0..1). */
+const TITLE = {
+  in: [0.07, 0.11], //      fades in at full width
+  recede: [0.13, 0.42], //  shrinks away into the distance
+  fade: [0.32, 0.42], //    dissolves during the last part of the recession
+  endScale: 0.05,
+};
+
+/** How quickly the intro catches up with the scroll position (1/s, lower = softer). */
+const FOLLOW_RATE = 7;
 
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const seg = (p, a, b) => clamp((p - a) / (b - a));
@@ -32,6 +48,7 @@ export default function Intro({ children }) {
   const stageRef = useRef(null);
   const prologueRef = useRef(null);
   const titleRef = useRef(null);
+  const titleTextRef = useRef(null);
   const crawlWrapRef = useRef(null);
   const crawlRef = useRef(null);
   const hintRef = useRef(null);
@@ -51,11 +68,20 @@ export default function Intro({ children }) {
     let last = 0;
     let stageH = window.innerHeight;
     let crawlH = 0;
+    let titleScale = 1; // makes the title exactly as wide as the screen
 
     const measure = () => {
       stageH = window.innerHeight;
       crawlH = crawlRef.current?.offsetHeight || 0;
+      const textW = titleTextRef.current?.offsetWidth || 1;
+      titleScale = clamp(document.documentElement.clientWidth / textW, 0.3, 3);
     };
+
+    /** Where the intro starts on the page and how far it scrolls. */
+    const getSpan = () => ({
+      top: track.getBoundingClientRect().top + window.scrollY,
+      span: Math.max(1, track.offsetHeight - window.innerHeight),
+    });
 
     const readTarget = () => {
       const r = track.getBoundingClientRect();
@@ -70,17 +96,19 @@ export default function Intro({ children }) {
       pro.style.transform = `translate3d(0, ${-seg(p, 0.03, 0.1) * 24}px, 0)`;
 
       // Title recedes
-      const tIn = seg(p, 0.085, 0.12);
-      const tOut = seg(p, 0.2, 0.25);
-      const tMove = ease(seg(p, 0.1, 0.25));
+      const tIn = seg(p, TITLE.in[0], TITLE.in[1]);
+      const tOut = seg(p, TITLE.fade[0], TITLE.fade[1]);
+      const tMove = ease(seg(p, TITLE.recede[0], TITLE.recede[1]));
       const title = titleRef.current;
       title.style.opacity = String(tIn * (1 - tOut));
-      title.style.transform = `translate3d(0, ${lerp(0, -stageH * 0.1, tMove)}px, 0) scale(${lerp(1.5, 0.05, tMove)})`;
+      // Shrink geometrically: equal steps in depth look like a steady recession.
+      const tScale = titleScale * Math.pow(TITLE.endScale / titleScale, tMove);
+      title.style.transform = `scale(${tScale})`; // scale only: it recedes straight back, no drift up or down
 
       // Crawl
-      const crawlP = seg(p, 0.2, 0.8);
+      const crawlP = seg(p, 0.38, 0.8);
       const wrap = crawlWrapRef.current;
-      wrap.style.opacity = String(seg(p, 0.19, 0.23) * (1 - seg(p, 0.76, 0.83)));
+      wrap.style.opacity = String(seg(p, 0.37, 0.41) * (1 - seg(p, 0.76, 0.83)));
       const y = lerp(crawlH + 60, -stageH * 0.9, crawlP);
       crawlRef.current.style.transform = `translateX(-50%) rotateX(26deg) translate3d(0, ${y}px, 0)`;
 
@@ -92,7 +120,8 @@ export default function Intro({ children }) {
       // Hyperspace jump
       const warpUp = ease(seg(p, 0.7, 0.87));
       const warpDown = ease(seg(p, 0.89, 1));
-      starState.warp = reduceMotion ? 0 : warpUp * (1 - warpDown);
+      // Once the intro is done other sections (ForceQuote) may use the warp.
+      if (p < 1) starState.warp = reduceMotion ? 0 : warpUp * (1 - warpDown);
 
       const flash = Math.max(0, 1 - Math.abs(p - 0.885) / 0.028);
       flashRef.current.style.opacity = String(
@@ -111,7 +140,7 @@ export default function Intro({ children }) {
     const tick = (now) => {
       const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
       last = now;
-      const k = reduceMotion ? 1 : 1 - Math.exp(-dt * 9);
+      const k = reduceMotion ? 1 : 1 - Math.exp(-dt * FOLLOW_RATE);
       current += (target - current) * k;
       if (Math.abs(target - current) < 0.0003) current = target;
       apply(current);
@@ -137,12 +166,15 @@ export default function Intro({ children }) {
       kick();
     };
 
+    const wheelSmoother = createIntroWheelSmoother({ getSpan });
+
     window.addEventListener("scroll", kick, { passive: true });
     window.addEventListener("resize", onResize);
     // Fonts change the crawl height once they load.
     document.fonts?.ready.then(onResize);
 
     return () => {
+      wheelSmoother.destroy();
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", kick);
       window.removeEventListener("resize", onResize);
@@ -162,7 +194,9 @@ export default function Intro({ children }) {
         </div>
 
         <div ref={titleRef} className={styles.title} aria-hidden="true">
-          syrus 7.0
+          <span ref={titleTextRef} className={styles.titleText}>
+            syrus 7.0
+          </span>
         </div>
 
         <div ref={crawlWrapRef} className={styles.crawlWrap}>

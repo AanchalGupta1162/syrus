@@ -1,78 +1,150 @@
-.team-card-container {
+/* Team member card: notched pixel frame, photo, hover lift with a hard
+   yellow shadow, and the pixel-decay LinkedIn corner. Width is set by the
+   container (see Team.css). */
+
+.team-card {
   position: relative;
-  overflow: hidden;
+  transition:
+    transform 0.15s steps(3),
+    filter 0.15s steps(3);
+}
+
+.team-card-frame,
+.team-card-inner {
+  clip-path: polygon(0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px));
+}
+
+.team-card-frame {
+  padding: 2px;
+  background: var(--primary-alpha);
+}
+
+.team-card-inner {
+  background: var(--secondary);
+}
+
+.team-card-photo {
+  position: relative;
   aspect-ratio: 3 / 4;
-  background-color: var(--secondary);
-  border-radius: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: last baseline;
-  font-family: "Noto Sans", sans-serif;
-  color: white;
-  justify-content: center;
-  transition: transform 0.1s ease-out;
-}
-
-.team-card-image {
-  display: unset;
-  position: absolute !important;
-  height: 100% !important;
-  max-width: unset;
-  top: 50% !important;
-  left: 50% !important;
-  z-index: 0 !important;
-  transform: translate(-50%, -50%) !important;
-}
-
-.team-card-info-wrapper {
-  width: 100%;
-  height: 40%;
-  padding: 1rem;
-  display: flex;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    #0508165d,
-    #050816d5,
-    var(--secondary)
-  );
-  justify-content: space-between;
-  align-items: center;
-  z-index: 2;
-}
-
-.team-card-text {
-  padding-top: 15%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.team-card-name {
-  position: relative;
-  font-size: 1.05rem;
-  z-index: 4;
-}
-
-.team-card-desgn {
-  width: fit-content;
-  position: relative;
-  font-size: 0.75rem;
-  z-index: 0;
-}
-
-.team-card-social {
-  padding-top: 1rem;
-  padding-inline: 0.5rem;
-  /* background: var(--secondary-alpha); */
-  /* padding: 0.5rem; */
-  border-radius: 25px;
-  position: relative;
-}
-
-.team-card-social svg {
-  background-color: white;
-  border-radius: 25px;
   overflow: hidden;
-  /* border: 2px solid var(--secondary); */
+  background: #0b1224;
+}
+
+.team-card-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.85) contrast(1.02);
+  transition: filter 0.2s;
+}
+
+.team-card-scan {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(5, 8, 22, 0.18) 0 2px, transparent 2px 4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.team-card:hover {
+  transform: translate(-4px, -4px);
+  filter: drop-shadow(4px 4px 0 var(--primary));
+}
+
+.team-card:hover .team-card-frame {
+  background: var(--primary);
+}
+
+.team-card:hover .team-card-photo img {
+  filter: saturate(1.1);
+}
+
+.team-card:hover .team-card-scan {
+  opacity: 1;
+}
+
+/* Pixel-decay LinkedIn corner */
+.team-card-corner {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 102px;
+  height: 102px;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.team-card-px {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: var(--secondary);
+  opacity: 0;
+  transition-duration: 0s;
+  transition-property: opacity;
+}
+
+.team-card-px.edge,
+.team-card-px.dust {
+  background: var(--primary);
+}
+
+.team-card-px.ember {
+  background: #816710;
+}
+
+.team-card:hover .team-card-px,
+.team-card-corner:focus-visible .team-card-px {
+  opacity: 1;
+}
+
+.team-card-badge {
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  width: 27px;
+  height: 27px;
+  fill: var(--primary);
+  opacity: 0;
+  shape-rendering: crispEdges;
+  transition: opacity 0s linear 0s;
+}
+
+.team-card:hover .team-card-badge,
+.team-card-corner:focus-visible .team-card-badge {
+  opacity: 1;
+  transition-delay: 0.3s;
+}
+
+.team-card-corner:hover .team-card-badge,
+.team-card-corner:focus-visible .team-card-badge {
+  fill: #fff;
+}
+
+/* Touch screens have no hover: show the corner already revealed. */
+@media (hover: none), (pointer: coarse) {
+  .team-card-px,
+  .team-card-badge {
+    opacity: 1;
+    transition: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .team-card-corner {
+    transform: scale(0.8);
+    transform-origin: 100% 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-card {
+    transition: none;
+  }
+  .team-card-px,
+  .team-card-badge {
+    transition-delay: 0s !important;
+  }
 }

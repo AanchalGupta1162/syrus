@@ -40,6 +40,30 @@
   min-height: 480px;
 }
 
+/* Phones: a still glow where the galaxy would be (no canvas, no animation). */
+.glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 85% 190px at var(--gx) 0,
+    rgba(var(--g), 0.3) 0,
+    rgba(var(--g), 0.1) 55%,
+    transparent 100%
+  );
+  /* fades in from the top edge so the stage doesn't show a hard line under the heading */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 56px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 56px);
+  animation: glow-in 0.6s ease-out both;
+}
+
+@keyframes glow-in {
+  from {
+    opacity: 0;
+  }
+}
+
 .stage {
   position: absolute;
   inset: 0;
@@ -55,23 +79,17 @@
   z-index: 1;
 }
 
-.cardPos {
-  position: absolute;
-  z-index: 2;
-}
-
-/* ---------- schedule (wide stages, right edge): three dates at a time ---------- */
-.schedule {
+/* ---------- card column (right side): three cards, the centre one is current ---------- */
+.cards {
   position: absolute;
   z-index: 3;
-  padding: 10px 14px 10px 6px;
-  background: rgba(var(--syrus-void-rgb), 0.5);
-  border: 1px solid var(--syrus-seam);
-  backdrop-filter: blur(6px);
 }
 
-/* shows exactly three rows; the reel slides behind it as you scroll */
+/* Clips the sliding list to exactly three cards. A few px at the right are left for
+   the scroll indicator. */
 .window {
+  position: absolute;
+  inset: 0 12px 0 0;
   overflow: hidden;
 }
 
@@ -79,91 +97,21 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  transition: transform 0.55s var(--syrus-ease-scan);
-}
-
-.row {
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 2px;
-  padding: 0 10px;
-  text-align: left;
-  background: transparent;
-  border: 0;
-  border-left: 2px solid transparent;
-  cursor: pointer;
-  font-family: var(--syrus-font-text);
-  opacity: 0.4;
-  transition: opacity 0.35s ease, background-color 0.25s ease, border-color 0.25s ease;
+  will-change: transform;
 }
 
-.row:hover,
-.row:focus-visible {
-  opacity: 0.8;
-  background: rgba(var(--syrus-holo-rgb), 0.08);
+.reel > li {
+  flex: none;
 }
 
-/* the stop you are at: bold and bright, the other two stay light */
-.rowActive,
-.rowActive:hover {
-  opacity: 1;
-  background: rgba(var(--syrus-yellow-rgb), 0.08);
-  border-left-color: var(--syrus-yellow);
-}
-
-.rowPhase {
-  line-height: 1.2;
-  font-weight: 400;
-  font-size: 0.5625rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--syrus-dim);
-}
-
-.rowDate {
-  line-height: 1.2;
-  font-weight: 400;
-  font-size: 0.9375rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--syrus-holo);
-}
-
-.rowTitle {
-  max-width: 100%;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 400;
-  font-size: 0.75rem;
-  color: var(--syrus-dim);
-}
-
-.rowActive .rowDate {
-  font-weight: 700;
-  color: var(--syrus-yellow);
-}
-
-.rowActive .rowTitle {
-  font-weight: 700;
-  color: var(--syrus-bone);
-}
-
-.rowActive .rowPhase {
-  font-weight: 700;
-}
-
-/* slim scroll indicator down the right edge: where the three visible dates sit among all ten */
+/* thin indicator: where the three visible cards sit among all ten */
 .thumbTrack {
   position: absolute;
-  top: 10px;
-  bottom: 10px;
-  right: 5px;
+  top: 0;
+  bottom: 0;
+  right: 3px;
   width: 2px;
   background: var(--syrus-seam);
 }
@@ -172,9 +120,156 @@
   position: absolute;
   left: 0;
   right: 0;
+  top: 0;
   background: var(--syrus-holo);
   box-shadow: 0 0 6px rgba(var(--syrus-holo-rgb), 0.6);
-  transition: top 0.55s var(--syrus-ease-scan);
+  will-change: transform;
+}
+
+/* ---------- card ---------- */
+/* Opacity and scale are set from the scroll position in Timeline.jsx, so the cards
+   fade and grow as they pass the centre. */
+.card {
+  --cut: 14px;
+  --panel-bg: rgba(14, 17, 23, 0.94);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  padding: 0;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--syrus-font-text);
+  color: inherit;
+  transform-origin: 50% 50%;
+  transition: background-color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* the current card: yellow outline */
+.cardActive {
+  --panel-line: var(--syrus-yellow);
+}
+
+/* a soft yellow wash on the current card */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background: linear-gradient(100deg, rgba(var(--syrus-yellow-rgb), 0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.cardActive::after {
+  opacity: 1;
+}
+
+.card:focus-visible {
+  --panel-line: var(--syrus-holo);
+  outline: none;
+}
+
+.cardInner {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(10px, 1.4vw, 16px) clamp(12px, 1.6vw, 20px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.phase,
+.step {
+  font-weight: 700;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.phase {
+  color: var(--syrus-dim);
+}
+
+.step {
+  color: var(--syrus-dim);
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+}
+
+.when {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 2px;
+}
+
+.date {
+  font-weight: 700;
+  font-size: clamp(1.2rem, 1.9vw, 1.5rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  color: var(--syrus-holo);
+  white-space: nowrap;
+}
+
+.time {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  color: var(--syrus-bone);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.title {
+  font-weight: 700;
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  line-height: 1.3;
+  color: var(--syrus-bone);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.desc {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--syrus-dim);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--lines, 2);
+  overflow: hidden;
+}
+
+/* the current card: yellow date, step badge lit */
+.cardActive .date {
+  color: var(--syrus-yellow);
+}
+
+.cardActive .step {
+  color: var(--syrus-yellow);
+}
+
+.card:not(.cardActive):hover {
+  --panel-line: var(--syrus-holo);
 }
 
 /* ---------- bottom bar: BB-8's rail, fixed to the bottom-left ---------- */
@@ -285,101 +380,6 @@
   box-shadow: 0 0 14px rgba(var(--syrus-yellow-rgb), 0.45);
 }
 
-/* ---------- card ---------- */
-.card {
-  --cut: 14px;
-  --panel-bg: rgba(18, 21, 27, 0.96);
-  width: 100%;
-  display: flex;
-}
-
-.cardInner {
-  flex: 1;
-  min-width: 0;
-  padding: clamp(12px, 1.6vw, 20px);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.phase,
-.step {
-  font-weight: 700;
-  font-size: 0.625rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 3px 7px;
-  white-space: nowrap;
-}
-
-.phase {
-  color: var(--syrus-bone);
-  border: 1px solid var(--syrus-seam);
-}
-
-.step {
-  color: var(--syrus-void);
-  background: var(--syrus-yellow);
-  font-variant-numeric: tabular-nums;
-}
-
-.date {
-  font-weight: 700;
-  font-size: clamp(1.25rem, 2.3vw, 1.75rem);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--syrus-holo);
-  line-height: 1.1;
-}
-
-.tba {
-  color: var(--syrus-rebel);
-}
-
-.title {
-  margin: 0;
-  font-weight: 700;
-  font-size: clamp(1rem, 1.6vw, 1.25rem);
-  line-height: 1.2;
-  color: var(--syrus-bone);
-  text-wrap: balance;
-}
-
-.desc {
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--syrus-dim);
-  max-width: 52ch;
-}
-
-/* card text builds in line by line each time BB-8 arrives at a stop */
-.reveal {
-  animation: reveal 0.55s var(--syrus-ease-scan) both;
-  animation-delay: var(--d, 0ms);
-}
-
-@keyframes reveal {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    clip-path: inset(0 0 0 0);
-  }
-}
-
 /* ---------- narrow stages: the card sits above the bottom bar ---------- */
 @media (max-width: 899px) {
   /* the rail is full width here, so keep it clear of the floating back-to-top button */
@@ -391,22 +391,30 @@
     max-width: none;
   }
 
+  .card {
+    --cut: 10px;
+  }
+
   .cardInner {
-    gap: 6px;
-    padding: 10px 14px;
+    gap: 3px;
+    padding: 8px 14px;
   }
 
   .date {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  .time {
+    font-size: 0.8125rem;
   }
 
   .title {
-    font-size: 0.95rem;
+    font-size: 0.9375rem;
   }
 
   .desc {
-    font-size: 0.8125rem;
-    line-height: 1.4;
+    font-size: 0.75rem;
+    line-height: 1.35;
   }
 }
 
@@ -420,9 +428,7 @@
     animation: none;
   }
 
-  .row,
-  .reel,
-  .thumb {
+  .step {
     transition: none;
   }
 }

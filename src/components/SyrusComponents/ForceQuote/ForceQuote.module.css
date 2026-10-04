@@ -1,0 +1,240 @@
+/* "May the Force be with you": tall scroll track + sticky full-screen stage. */
+/* Overlaps the end of Tracks and the start of the FAQ (margins set from JS), so
+   it must not block clicks on whatever is underneath. */
+.track {
+  position: relative;
+  z-index: 1;
+  height: 300vh;
+  height: 300svh;
+  pointer-events: none;
+}
+
+/* Darkens the page behind the quote while it is on screen. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 100% 100% at 50% 50%,
+    rgba(var(--syrus-void-rgb), 0.9) 0%,
+    rgba(var(--syrus-void-rgb), 0.7) 55%,
+    rgba(var(--syrus-void-rgb), 0) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+/* Soft light behind the words. */
+.glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(1400px, 150vw);
+  aspect-ratio: 1.7;
+  background: radial-gradient(
+    closest-side,
+    rgba(var(--syrus-yellow-rgb), 0.17),
+    rgba(var(--syrus-holo-rgb), 0.07) 48%,
+    transparent 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Blade of light: white core, cold-blue halo, full screen width. */
+.blade {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #fff 14%,
+    #fff 86%,
+    transparent
+  );
+  box-shadow:
+    0 0 10px 1px rgba(255, 255, 255, 0.9),
+    0 0 26px 5px rgba(var(--syrus-holo-rgb), 0.75),
+    0 0 70px 14px rgba(var(--syrus-holo-rgb), 0.35);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.content {
+  position: relative;
+  padding-inline: var(--syrus-gutter);
+  text-align: center;
+  will-change: transform, opacity;
+}
+
+/* Opened from the middle by the blade (clip-path is set from JS). */
+.reveal {
+  padding-block: 0.12em;
+  will-change: clip-path;
+}
+
+.quote {
+  margin: 0;
+  font-family: var(--syrus-font-primary);
+  font-weight: 400;
+  /* Sized so "may the force" always fits on one line, down to 320px phones. */
+  font-size: clamp(1.45rem, 9.2vw, 6.8rem);
+  line-height: 1.32;
+  letter-spacing: 0.03em;
+  color: var(--syrus-bone);
+  text-shadow: 0 0 18px rgba(var(--syrus-yellow-rgb), 0.18);
+}
+
+.line {
+  display: flex;
+  justify-content: center;
+  gap: 0.34em;
+  white-space: nowrap;
+}
+
+.word {
+  display: inline-block;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.force {
+  color: var(--syrus-yellow);
+  text-shadow: none;
+  filter: none;
+}
+
+.slotViewport {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  height: 1.32em;
+  line-height: 1.32em;
+  vertical-align: baseline;
+}
+
+/* One reel per letter: a window one letter tall over a tall strip of letters. */
+.reel {
+  display: block;
+  width: 0.82em;
+  height: 1.32em;
+  overflow: hidden;
+  text-align: center;
+  -webkit-mask-image: linear-gradient(transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(transparent 0%, #000 14%, #000 86%, transparent 100%);
+}
+
+.reelStrip {
+  display: block;
+  will-change: transform;
+}
+
+.reelCell {
+  display: block;
+  height: 1.32em;
+  line-height: 1.32em;
+  color: var(--syrus-yellow);
+}
+
+/* Yoda sits in the fifth slot (its space is held from the start, so nothing shifts),
+   pops in once CODE has landed, then winks. */
+.yoda {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.82em;
+  height: 1.32em;
+  opacity: 0;
+  transform: scale(0.3) rotate(-14deg);
+  transform-origin: 50% 70%;
+  transition: opacity 0.15s ease, transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.yoda svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.yodaOn {
+  opacity: 1;
+  transform: none;
+}
+
+.winkArc {
+  opacity: 0;
+}
+
+/* A cheeky wink soon after he appears, then again every few seconds. */
+.yodaOn .eyeR {
+  animation: yodaEye 4s ease-in-out 0.4s infinite;
+}
+
+.yodaOn .winkArc {
+  animation: yodaArc 4s ease-in-out 0.4s infinite;
+}
+
+@keyframes yodaEye {
+  0%,
+  8%,
+  30%,
+  100% {
+    opacity: 1;
+  }
+  12%,
+  26% {
+    opacity: 0;
+  }
+}
+
+@keyframes yodaArc {
+  0%,
+  8%,
+  30%,
+  100% {
+    opacity: 0;
+  }
+  12%,
+  26% {
+    opacity: 1;
+  }
+}
+
+/* No scroll animation: a plain block showing the finished quote. */
+@media (prefers-reduced-motion: reduce) {
+  .yoda {
+    display: none;
+  }
+
+  .track {
+    height: auto;
+    padding-block: var(--syrus-section-y);
+  }
+
+  .stage {
+    position: relative;
+    height: auto;
+  }
+
+  .blade,
+  .glow,
+  .scrim {
+    display: none;
+  }
+}

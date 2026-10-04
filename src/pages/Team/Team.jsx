@@ -1,34 +1,57 @@
-import React, { Suspense, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import "./Team.css";
-import Accordion from "react-bootstrap/Accordion";
 import CodecellNav from "../../components/Navbar/Navbar";
 import Card from "../../components/misc/Card/Card";
 import Footer from "../../components/Footer/Footer";
-import Loading from "../../components/misc/Loading/Loading";
 import ScrollToTopButton from "../../components/misc/ScrollToTop/ScrollToTop";
 import faculty from "../../assets/data/faculty.json";
 import be from "../../assets/data/be.json";
 import te from "../../assets/data/te.json";
 import se from "../../assets/data/se.json";
 
-const Team = () => {
-  const [activeEventKey, setActiveEventKey] = useState("0");
-  const facultyRef = useRef(null);
-  const beRef = useRef(null);
-  const teRef = useRef(null);
-  const seRef = useRef(null);
+const GROUPS = [
+  { id: "faculty", title: "Faculty Advisors", members: faculty, large: true },
+  { id: "be", title: "BE Members", members: be },
+  { id: "te", title: "TE Members", members: te },
+  { id: "se", title: "SE Members", members: se },
+];
 
-  const handleClickToggle = (eventKey, eventRef) => {
-    if (eventKey === activeEventKey) {
-      setActiveEventKey("");
-    } else {
-      setActiveEventKey(eventKey);
+// Static "matrix" columns behind the hero, echoing the home page's code rain.
+const MATRIX_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ<>/$@#&*{}~";
+const MATRIX_SHADES = ["a", "b", "c"];
+const MATRIX = Array.from({ length: 52 }, (_, c) => {
+  const len = 10 + ((c * 7) % 14);
+  let text = "";
+  for (let i = 0; i < len; i++) {
+    text += MATRIX_CHARS[(c * 31 + i * 17 + ((c * i) % 11)) % MATRIX_CHARS.length] + "\n";
+  }
+  return { text, shade: MATRIX_SHADES[(c * 5) % 3] };
+});
+
+const Chevron = () => (
+  <svg className="team-acc-chev" viewBox="0 0 8 6" aria-hidden="true">
+    <path d="M0 0h8v2H0zM2 2h4v2H2zM3 4h2v2H3z" />
+  </svg>
+);
+
+const Team = () => {
+  // One group open at a time; faculty starts open.
+  const [openId, setOpenId] = useState("faculty");
+  const headerRefs = useRef({});
+
+  const toggle = (id) => {
+    const opening = openId !== id;
+    setOpenId(opening ? id : null);
+    if (opening) {
+      // Once the previous group has collapsed, bring the opened header near the top if it is off screen.
       setTimeout(() => {
-        eventRef.current.scrollIntoView({
-          behavior: "smooth",
-          inline: "nearest",
-        });
-      }, 400);
+        const header = headerRefs.current[id];
+        if (!header) return;
+        const top = header.getBoundingClientRect().top;
+        if (top < 0 || top > window.innerHeight * 0.6) {
+          window.scrollTo({ top: window.scrollY + top - 16, behavior: "smooth" });
+        }
+      }, 460);
     }
   };
 
@@ -36,95 +59,83 @@ const Team = () => {
     <div id="team">
       <ScrollToTopButton />
       <CodecellNav />
-      <div className="meet-the-team">
-        Meet The&nbsp;<span>CodeCell++</span>&nbsp;Team
-      </div>
-      <Accordion flush defaultActiveKey="0">
-        <Accordion.Item
-          className="team-section faculty"
-          eventKey="0"
-          ref={facultyRef}
-        >
-          <div className="team-wrapper">
-            <Accordion.Header
-              className="team-title"
-              onClick={() => handleClickToggle("0", facultyRef)}
-            >
-              <span>Faculty advisors</span>
-            </Accordion.Header>
-            <Accordion.Body>
-              <div className="team-cards">
-                {faculty.map((card) => (
-                  <Card card={card} key={card.name} />
-                ))}
+
+      <section className="team-hero">
+        <div className="team-matrix" aria-hidden="true">
+          {MATRIX.map((col, i) => (
+            <div key={i} className={`team-matrix-col shade-${col.shade}`}>
+              {col.text}
+            </div>
+          ))}
+        </div>
+        <div className="team-wrap team-hero-inner">
+          {/* Single line on wide screens, stacked on phones; both type themselves out. */}
+          <h1 className="team-title team-title-line" aria-label="Meet the CodeCell++ Team">
+            <span className="team-tline" aria-hidden="true">
+              <span className="team-type team-type-line">
+                Meet the <span className="team-accent">CodeCell++</span> Team
+              </span>
+              <span className="team-cursor team-cursor-line" />
+            </span>
+          </h1>
+          <h1 className="team-title team-title-stack" aria-label="Meet the CodeCell++ Team">
+            <span className="team-tline" aria-hidden="true">
+              <span className="team-type team-type-1">Meet the</span>
+              <span className="team-cursor team-cursor-1" />
+            </span>
+            <span className="team-tline team-accent" aria-hidden="true">
+              <span className="team-type team-type-2">CodeCell++</span>
+              <span className="team-cursor team-cursor-2" />
+            </span>
+            <span className="team-tline" aria-hidden="true">
+              <span className="team-type team-type-3">Team</span>
+              <span className="team-cursor team-cursor-3" />
+            </span>
+          </h1>
+        </div>
+      </section>
+
+      <main className="team-wrap team-roster">
+        {GROUPS.map((group) => {
+          const open = openId === group.id;
+          const panelId = `team-panel-${group.id}`;
+          return (
+            <section key={group.id} className="team-group">
+              <h2
+                className={`team-acc ${open ? "is-open" : ""}`}
+                ref={(el) => {
+                  headerRefs.current[group.id] = el;
+                }}
+              >
+                <span className="team-acc-frame">
+                  <button
+                    type="button"
+                    className="team-acc-btn"
+                    aria-expanded={open}
+                    aria-controls={panelId}
+                    onClick={() => toggle(group.id)}
+                  >
+                    <span className="team-acc-title">{group.title}</span>
+                    <span className="team-acc-dash" aria-hidden="true" />
+                    <Chevron />
+                  </button>
+                </span>
+              </h2>
+              <div id={panelId} className={`team-panel ${open ? "is-open" : ""}`}>
+                <div className="team-panel-inner">
+                  <div className="team-panel-body">
+                    <div className={`team-cards ${group.large ? "is-large" : ""}`}>
+                      {group.members.map((card) => (
+                        <Card card={card} key={card.name} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </Accordion.Body>
-          </div>
-        </Accordion.Item>
-        <Accordion.Item
-          className="team-section be-members"
-          eventKey="1"
-          ref={beRef}
-        >
-          <div className="team-wrapper">
-            <Accordion.Header
-              className="team-title"
-              onClick={() => handleClickToggle("1", beRef)}
-            >
-              <span>BE Members</span>
-            </Accordion.Header>
-            <Accordion.Body>
-              <div className="team-cards">
-                {be.map((card) => (
-                  <Card card={card} key={card.name} />
-                ))}
-              </div>
-            </Accordion.Body>
-          </div>
-        </Accordion.Item>
-        <Accordion.Item
-          className="team-section te-members"
-          eventKey="2"
-          ref={teRef}
-        >
-          <div className="team-wrapper">
-            <Accordion.Header
-              className="team-title"
-              onClick={() => handleClickToggle("2", teRef)}
-            >
-              <span>TE Members</span>
-            </Accordion.Header>
-            <Accordion.Body>
-              <div className="team-cards">
-                {te.map((card) => (
-                  <Card card={card} key={card.name} />
-                ))}
-              </div>
-            </Accordion.Body>
-          </div>
-        </Accordion.Item>
-        <Accordion.Item
-          className="team-section se-members"
-          eventKey="3"
-          ref={seRef}
-        >
-          <div className="team-wrapper">
-            <Accordion.Header
-              className="team-title"
-              onClick={() => handleClickToggle("3", seRef)}
-            >
-              <span>SE Members</span>
-            </Accordion.Header>
-            <Accordion.Body>
-              <div className="team-cards">
-                {se.map((card) => (
-                  <Card card={card} key={card.name} />
-                ))}
-              </div>
-            </Accordion.Body>
-          </div>
-        </Accordion.Item>
-      </Accordion>
+            </section>
+          );
+        })}
+      </main>
 
       <Footer />
     </div>

@@ -36,7 +36,7 @@ const FAQ_DATA = [
   {
     question: "Are there any particular domains for the hackathon?",
     answer:
-      "Yes, the hackathon has five tracks: Blockchain, FinTech, Agentic AI, Quantum, and FE Special (only for first-year students).",
+      "Yes, the hackathon has five domains: Blockchain, FinTech, Agentic AI, Quantum, and FE Special (only for first-year students).",
   },
 ];
 
@@ -46,9 +46,16 @@ export default function Faq() {
   return (
     <section
       id="faq-section"
-      className="syrus-section"
+      className={`syrus-section ${styles.section}`}
       aria-labelledby="faq-title"
     >
+      <img
+          src="/syrus-characters/mandalorian.png"
+          alt=""
+          aria-hidden="true"
+          className={styles.character}
+          loading="lazy"
+        />
       <div className="syrus-container">
         <SectionHeading id="faq-title">faqs</SectionHeading>
 

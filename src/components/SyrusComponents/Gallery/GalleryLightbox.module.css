@@ -1,0 +1,150 @@
+/* Full-screen photo viewer. Portalled into .syrus-page, so tokens apply. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) clamp(12px, 3vw, 32px)
+    max(14px, env(safe-area-inset-bottom));
+  background: rgba(var(--syrus-void-rgb), 0.94);
+  font-family: var(--syrus-font-text);
+  color: var(--syrus-bone);
+  animation: fade-in 0.22s ease-out;
+}
+
+.top {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* The photo sits in the middle row and is never larger than it. */
+.stage {
+  position: relative;
+  min-height: 0;
+  touch-action: pan-y pinch-zoom;
+}
+
+/* Absolutely positioned so max-width / max-height % resolve against the cell. */
+.photo {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  border: 1px solid var(--syrus-seam);
+  background: var(--syrus-plate);
+  box-shadow: 0 0 0 1px rgba(var(--syrus-void-rgb), 0.6),
+    0 18px 60px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transform: scale(0.985);
+  transition:
+    opacity 0.28s ease-out,
+    transform 0.28s var(--syrus-ease-scan);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.photoIn {
+  opacity: 1;
+  transform: none;
+}
+
+/* A thin scanning line while a large photo downloads. */
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(160px, 40%);
+  height: 2px;
+  margin: -1px 0 0 -80px;
+  overflow: hidden;
+  background: rgba(var(--syrus-holo-rgb), 0.18);
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: var(--syrus-holo);
+  animation: scan 1s ease-in-out infinite;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 4vw, 28px);
+}
+
+.caption {
+  min-width: 128px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.edition {
+  font-family: var(--syrus-font-secondary);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  color: var(--syrus-yellow);
+}
+
+.count {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--syrus-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+:global(.syrus-page) button.round {
+  --cut: 8px;
+  width: 48px;
+  min-height: 48px;
+  padding: 0;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes scan {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(260%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    animation: none;
+  }
+
+  .photo {
+    transform: none;
+    transition: none;
+  }
+
+  .loading::after {
+    animation-duration: 2.4s;
+  }
+}

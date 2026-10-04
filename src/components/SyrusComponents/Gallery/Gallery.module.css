@@ -29,7 +29,21 @@
   overflow: hidden;
 }
 
-.slide img {
+/* The whole photo is a button that opens the viewer. */
+.open {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--syrus-yellow);
+  cursor: zoom-in;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.open img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -41,8 +55,54 @@
   transform: scale(1.04);
 }
 
+/* Outlines would be clipped by the slide, so focus is drawn inside it. */
+.open:focus-visible {
+  outline: 2px solid var(--syrus-holo);
+  outline-offset: -4px;
+}
+
+/* Small "enlarge" hint, bottom-right corner */
+.zoom {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  background: rgba(var(--syrus-void-rgb), 0.72);
+  border: 1px solid rgba(var(--syrus-bone-rgb), 0.3);
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s var(--syrus-ease-scan);
+  pointer-events: none;
+}
+
+.zoomIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.open:hover .zoom,
+.open:focus-visible .zoom {
+  opacity: 1;
+  transform: none;
+}
+
+/* Touch screens have no hover, so the hint is always shown there. */
+@media (hover: none) {
+  .zoom {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* padding, not margin: ".syrus-page .syrus-container { margin: 0 auto }" would
+   override a margin-top here and the buttons would sit against the photos. */
 .controls {
-  margin-top: 20px;
+  padding-top: 24px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -67,7 +127,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .slide img {
+  .open img,
+  .zoom {
     transition: none;
   }
   .slide:hover img {
