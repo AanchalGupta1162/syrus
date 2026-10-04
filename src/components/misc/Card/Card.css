@@ -134,8 +134,21 @@
 
 @media (max-width: 760px) {
   .team-card-corner {
-    transform: scale(0.8);
+    transform: scale(0.7);
     transform-origin: 100% 100%;
+  }
+}
+
+/* Two small cards per row: keep the corner from covering the name on the photo. */
+@media (max-width: 480px) {
+  .team-card-corner {
+    transform: scale(0.55);
+  }
+}
+
+@media (max-width: 340px) {
+  .team-card-corner {
+    transform: scale(0.45);
   }
 }
 

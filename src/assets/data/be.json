@@ -24,16 +24,16 @@
     "photo": "/teamImages/BE/harshavardhan_BE.webp"
   },
   {
-    "name": "Sahil Tanwani",
-    "designation": "Sr. Tech Manager",
-    "social": "https://www.linkedin.com/in/sahil-tanwani-bb44012b4/",
-    "photo": "/teamImages/BE/sahil_BE.webp"
-  },
-  {
     "name": "Veda Patki",
     "designation": "Sr. Tech Manager",
     "social": "https://www.linkedin.com/in/veda-patki-07974b319/",
     "photo": "/teamImages/BE/veda_BE.webp"
+  },
+  {
+    "name": "Sahil Tanwani",
+    "designation": "Sr. Tech Manager",
+    "social": "https://www.linkedin.com/in/sahil-tanwani-bb44012b4/",
+    "photo": "/teamImages/BE/sahil_BE.webp"
   },
   {
     "name": "Yash Katiyara",
@@ -60,16 +60,16 @@
     "photo": "/teamImages/BE/vedant_BE.webp"
   },
   {
-    "name": "Priyanka Ochaney",
-    "designation": "Sr. Ambassador",
-    "social": "https://www.linkedin.com/in/priyanka-ochaney-a14b40274/",
-    "photo": "/teamImages/BE/priyanka_BE.webp"
-  },
-  {
     "name": "Riddhi Menghrajani",
     "designation": "Sr. Ambassador",
     "social": "https://www.linkedin.com/in/riddhi-menghrajani-176b032a4",
     "photo": "/teamImages/BE/riddhi_BE_ambassadors.webp"
+  },
+  {
+    "name": "Priyanka Ochaney",
+    "designation": "Sr. Ambassador",
+    "social": "https://www.linkedin.com/in/priyanka-ochaney-a14b40274/",
+    "photo": "/teamImages/BE/priyanka_BE.webp"
   },
   {
     "name": "Garv Chandnani",
