@@ -1,47 +1,18 @@
-// SYRUS 7.0 tracks. Edit this list to change the tracks section.
-//   by                    - optional track sponsor shown as "by X"
-//   note                  - optional highlighted note (e.g. eligibility)
-//   problemStatementsUrl  - used by the (currently commented-out) button in
-//                           Tracks.jsx. Fill it in on hackathon day.
+// SYRUS 7.0 domains shown in the Domain section.
 const tracks = [
-  {
-    id: "blockchain",
-    title: "Blockchain",
-    by: "EkamVistar",
-    description:
-      "Build decentralised apps, smart contracts and on-chain tools that make trust programmable.",
-    problemStatementsUrl: "",
-  },
   {
     id: "fintech",
     title: "FinTech",
-    by: "021 Trade",
     description:
-      "Reimagine payments, trading, lending and personal finance with fast, secure and inclusive products.",
-    problemStatementsUrl: "",
+      "Harness Blockchain, Quantum Computing and Agentic AI to revolutionize trading, optimize financial portfolios, and build next-generation secure systems.",
+    problemStatementsUrl: "", // Add the document URL when it is available.
   },
   {
-    id: "agentic-ai",
-    title: "Agentic AI",
+    id: "sustainability",
+    title: "Sustainability",
     description:
-      "Create autonomous AI agents that plan, use tools and get real work done.",
-    problemStatementsUrl: "",
-  },
-  {
-    id: "quantum",
-    title: "Quantum",
-    by: "IBM Qiskit",
-    description:
-      "Explore quantum computing with Qiskit and tackle problems classical computers struggle with.",
-    problemStatementsUrl: "",
-  },
-  {
-    id: "fe-special",
-    title: "FE Special",
-    note: "Only for first-year students",
-    description:
-      "A dedicated track for first-year students to build, learn and compete on their own turf.",
-    problemStatementsUrl: "",
+      "Engineer impactful solutions that make healthcare, agriculture, education, and smart mobility accessible, scalable, and sustainable for all.",
+    problemStatementsUrl: "", // Add the document URL when it is available.
   },
 ];
 

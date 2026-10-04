@@ -168,6 +168,40 @@
   text-shadow: rgba(var(--syrus-yellow-rgb), 0.45) 0 0 18px;
 }
 
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: auto;
+}
+
+.problemCount {
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--syrus-bone);
+}
+
+:global(.syrus-page) a.cta {
+  min-height: 44px;
+  padding-inline: 18px;
+  font-size: 0.6875rem;
+}
+
+:global(.syrus-page) a.cta[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cta span {
+  font-size: 1rem;
+  line-height: 0;
+}
+
+/* Kept for optional domain-specific metadata. */
 .by {
   margin: 0;
   font-weight: 600;
@@ -230,6 +264,11 @@
 
   .title {
     font-size: clamp(1.75rem, 8vw, 2.25rem);
+  }
+
+  .cardFooter {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

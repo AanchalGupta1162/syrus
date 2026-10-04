@@ -66,24 +66,19 @@ export default function Tracks() {
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <h3 className={styles.title}>{t.title}</h3>
-                {t.by && <p className={styles.by}>by {t.by}</p>}
-                {t.note && <p className={styles.note}>{t.note}</p>}
                 <p className={styles.desc}>{t.description}</p>
-
-                {/*
-                  "View Problem Statements" is revealed on hackathon day.
-                  Uncomment this block and set `problemStatementsUrl` in
-                  src/assets/data/tracks.js.
-
+                <div className={styles.cardFooter}>
+                  <span className={styles.problemCount}>04 problem statements</span>
                   <a
                     className={`syrus-btn syrus-btn--ghost ${styles.cta}`}
-                    href={t.problemStatementsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={t.problemStatementsUrl || undefined}
+                    target={t.problemStatementsUrl ? "_blank" : undefined}
+                    rel={t.problemStatementsUrl ? "noopener noreferrer" : undefined}
+                    aria-disabled={!t.problemStatementsUrl}
                   >
-                    View Problem Statements
+                    View problem statements <span aria-hidden="true">→</span>
                   </a>
-                */}
+                </div>
               </div>
             </li>
           ))}
