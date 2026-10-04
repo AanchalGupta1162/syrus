@@ -4,8 +4,8 @@
 .track {
   position: relative;
   z-index: 1;
-  height: 230vh;
-  height: 230svh;
+  height: 300vh;
+  height: 300svh;
   pointer-events: none;
 }
 
@@ -13,7 +13,12 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgba(var(--syrus-void-rgb), 0.9);
+  background: radial-gradient(
+    ellipse 100% 100% at 50% 50%,
+    rgba(var(--syrus-void-rgb), 0.9) 0%,
+    rgba(var(--syrus-void-rgb), 0.7) 55%,
+    rgba(var(--syrus-void-rgb), 0) 100%
+  );
   opacity: 0;
   pointer-events: none;
   will-change: opacity;
@@ -110,9 +115,28 @@
 
 .force {
   color: var(--syrus-yellow);
-  text-shadow:
-    0 0 14px rgba(var(--syrus-yellow-rgb), 0.55),
-    0 0 42px rgba(var(--syrus-yellow-rgb), 0.3);
+  text-shadow: none;
+  filter: none;
+}
+
+.slotViewport {
+  display: inline-block;
+  width: 4.1em;
+  height: 1.32em;
+  line-height: 1.32em;
+  perspective: 700px;
+  text-align: center;
+  vertical-align: baseline;
+}
+
+.slotText {
+  display: inline-block;
+  white-space: nowrap;
+  color: var(--syrus-yellow);
+  backface-visibility: hidden;
+  line-height: 1.32em;
+  transform-origin: center center;
+  will-change: transform, opacity;
 }
 
 /* No scroll animation: a plain block showing the finished quote. */
