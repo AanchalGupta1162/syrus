@@ -23,7 +23,7 @@ import styles from "./Intro.module.css";
 
 const INTRO_PARAGRAPHS = [
   "It is a period of rapid innovation. At VESIT, the builders of CodeCell++ have opened the gates to SYRUS 7.0: two days of building.",
-  "Two tracks await: FinTech and Sustainability. Choose your mission, assemble your crew and build.",
+  "Two domains await: FinTech and Sustainability. Choose your mission, assemble your crew and build.",
   "On the 9th and 10th of October the galaxy will be watching. Prepare to jump to lightspeed…",
 ];
 

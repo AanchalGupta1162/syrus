@@ -8,7 +8,7 @@ const MENU_ITEMS = [
   { id: "sponsors", label: "Sponsors" },
   { id: "prizepool", label: "Prize Pool" },
   { id: "timeline", label: "Timeline" },
-  { id: "tracks", label: "Tracks" },
+  { id: "tracks", label: "Domain" },
   { id: "faq-section", label: "FAQs" },
   { id: "gallery", label: "Gallery" },
 ];

@@ -1,44 +1,150 @@
+.headingRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.replay {
+  flex: 0 0 auto;
+  min-height: 36px;
+  margin-top: 8px;
+  padding: 0 14px;
+  border: 1px solid var(--syrus-seam);
+  background: transparent;
+  color: var(--syrus-holo);
+  font-family: var(--syrus-font-text);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.replay:hover {
+  border-color: var(--syrus-yellow);
+  background: rgba(var(--syrus-yellow-rgb), 0.08);
+  color: var(--syrus-yellow);
+}
+
+.replay:focus-visible {
+  outline: 2px solid var(--syrus-holo);
+  outline-offset: 3px;
+}
+
 .grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(300px, auto);
   gap: clamp(14px, 2vw, 22px);
 }
 
 .card {
   --cut: 16px;
   --panel-bg: rgba(18, 21, 27, 0.92);
-  grid-column: span 2;
-}
-
-/* 3 + 2 layout: last two cards share the row, centred */
-.card:nth-child(4) {
-  grid-column: 2 / span 2;
-}
-
-.card:nth-child(5) {
-  grid-column: 4 / span 2;
+  min-height: 300px;
 }
 
 .card:hover {
+  --panel-bg: rgba(26, 26, 20, 0.96);
   --panel-line: rgba(var(--syrus-yellow-rgb), 0.6);
+}
+
+.card::before {
+  transition: background 0.4s ease;
+}
+
+.edge {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.edgeBase,
+.edgeBlade {
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.edgeBase {
+  stroke: var(--syrus-seam);
+  stroke-width: 1;
+}
+
+.edgeBlade {
+  stroke: rgb(255, 254, 245);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  opacity: 0.22;
+  filter: drop-shadow(0 0 2px var(--syrus-yellow))
+    drop-shadow(0 0 7px rgba(var(--syrus-yellow-rgb), 0.7));
+}
+
+.card:global(.is-in):not([data-traced="true"]) .edgeBlade {
+  animation: edgeTrace 1.7s cubic-bezier(0.7, 0, 0.2, 1) var(--trace-delay, 0s)
+    both;
+}
+
+.card[data-traced="true"] .edgeBlade {
+  animation: none;
+  stroke-dashoffset: 0;
+  opacity: 0.22;
+}
+
+.card:hover .edgeBlade {
+  animation: edgeRelight 0.6s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+
+@keyframes edgeTrace {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  65% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.22;
+  }
+}
+
+@keyframes edgeRelight {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
 }
 
 .body {
   position: relative;
+  z-index: 2;
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: clamp(22px, 2.6vw, 32px);
+  gap: 12px;
+  padding: clamp(24px, 3.2vw, 36px) clamp(24px, 3.5vw, 40px);
 }
 
 .index {
   position: absolute;
-  top: 14px;
-  right: 22px;
+  top: 18px;
+  right: 24px;
   font-weight: 700;
   font-size: 0.75rem;
   letter-spacing: 0.16em;
@@ -47,13 +153,19 @@
 
 .title {
   margin: 0;
-  padding-right: 36px;
+  padding-right: 42px;
   font-weight: 800;
-  font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 1.1;
   color: var(--syrus-yellow);
+  text-shadow: none;
+  transition: text-shadow 0.4s ease;
+}
+
+.card:hover .title {
+  text-shadow: rgba(var(--syrus-yellow-rgb), 0.45) 0 0 18px;
 }
 
 .by {
@@ -78,8 +190,9 @@
 }
 
 .desc {
-  margin: 6px 0 0;
-  font-size: 1rem;
+  max-width: 440px;
+  margin: 0;
+  font-size: 1.0625rem;
   line-height: 1.6;
   color: var(--syrus-bone);
   opacity: 0.88;
@@ -92,19 +205,8 @@
 }
 
 @media (max-width: 899px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .card,
-  .card:nth-child(4),
-  .card:nth-child(5) {
-    grid-column: auto;
-  }
-
-  /* odd one out spans the row */
-  .card:nth-child(5) {
-    grid-column: 1 / -1;
+  .body {
+    padding: 28px;
   }
 }
 
@@ -113,7 +215,34 @@
     grid-template-columns: 1fr;
   }
 
-  .card:nth-child(5) {
-    grid-column: auto;
+  .headingRow {
+    gap: 12px;
+  }
+
+  .replay {
+    min-height: 32px;
+    padding-inline: 9px;
+  }
+
+  .body {
+    padding: 28px 24px;
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:global(.is-in) .edgeBlade,
+  .card:hover .edgeBlade {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 0.22;
+    filter: none;
+  }
+
+  .card:hover .edgeBlade {
+    opacity: 1;
   }
 }
