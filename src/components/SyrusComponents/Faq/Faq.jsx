@@ -36,7 +36,7 @@ const FAQ_DATA = [
   {
     question: "Are there any particular domains for the hackathon?",
     answer:
-      "Yes, the hackathon has five domains: Blockchain, FinTech, Agentic AI, Quantum, and FE Special (only for first-year students).",
+      "Yes, the hackathon has two domains: FinTech and Sustainability.",
   },
 ];
 
