@@ -11,9 +11,9 @@ const TIERS = [
     label: "Title Sponsors",
     size: "lg",
     items: [
-      { name: "EkamVistar", logo: null },
-      { name: "021 Trade", logo: null },
-      { name: "FalconX", logo: null },
+      { name: "EkamVistar", logo: "/sponsors/EkamVistar.webp" },
+      { name: "021 Trade", logo: "/sponsors/012 Trade.webp" },
+      { name: "FalconX", logo: "/sponsors/FalconX.webp" },
     ],
   },
   {
@@ -35,9 +35,9 @@ const TIERS = [
     label: "Individual Sponsors",
     size: "md",
     items: [
-      { name: "Santosh Gupta", tag: "ML Engineer at Meta", logo: "/sponsors/SantoshGuptaSir.webp" },
-      { name: "Vishal Chandwani", tag: "Senior Engineer at Microsoft", logo: "/sponsors/VishalSir.webp" },
-      { name: "Ranjeet Shetye", tag: "MD at Everstream Analytics", logo: "/sponsors/RanjeetSir.webp", objectPosition: "center 20%", imgScale: 1.2 },
+      { name: "Santosh Gupta", tag: "ML Engineer at Meta", logo: "/sponsors/SantoshGuptaSir.webp", objectFit: "cover" },
+      { name: "Vishal Chandwani", tag: "Senior Engineer at Microsoft", logo: "/sponsors/VishalSir.webp", objectFit: "cover" },
+      { name: "Ranjeet Shetye", tag: "MD at Everstream Analytics", logo: "/sponsors/RanjeetSir.webp", objectFit: "cover", objectPosition: "center 20%", imgScale: 1.2 },
     ],
   },
   {
@@ -89,6 +89,7 @@ export default function Sponsors() {
                         width="240"
                         height="240"
                         style={{
+                          ...(s.objectFit && { objectFit: s.objectFit, padding: 0 }),
                           ...(s.objectPosition && { objectPosition: s.objectPosition }),
                           ...(s.imgScale && { transform: `scale(${s.imgScale})` }),
                         }}

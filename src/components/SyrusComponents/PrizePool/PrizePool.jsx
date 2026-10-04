@@ -177,6 +177,18 @@ export default function PrizePool() {
           <p className={styles.perks}>Internships • Swags • Goodies</p>
         </div>
       </div>
+
+      {/* Stormtrooper accent */}
+      <div className={styles.trooperWrap}>
+        <img
+          className={styles.trooper}
+          src="/sponsors/StormTrooper.webp"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
     </section>
   );
 }
