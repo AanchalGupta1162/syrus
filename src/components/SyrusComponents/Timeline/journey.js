@@ -37,8 +37,8 @@ export function cardsRect(w, h) {
   }
 
   const gap = 14;
-  const cw = clamp(w * 0.34, 340, 520);
-  const cardH = clamp(Math.floor((usable - 12 - 2 * gap) / 3), 116, 200);
+  const cw = clamp(w * 0.34, 380, 540);
+  const cardH = clamp(Math.floor((usable - 12 - 2 * gap) / 3), 116, 232);
   const ch = 3 * cardH + 2 * gap;
   return {
     x: Math.round(w - m - cw),

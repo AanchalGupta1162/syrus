@@ -44,11 +44,11 @@ const STACKED_LEVELS = [
 // the text no longer fits, the clip check below steps every card down a level.
 const startLevel = (cards) => {
   const h = cards.cardH;
-  if (cards.stacked) return h >= 112 ? 0 : h >= 98 ? 1 : h >= 82 ? 2 : 3;
-  if (h >= 172) return 0;
-  if (h >= 153) return 1;
-  if (h >= 134) return 2;
-  if (h >= 109) return 3;
+  if (cards.stacked) return h >= 130 ? 0 : h >= 110 ? 1 : h >= 90 ? 2 : 3;
+  if (h >= 184) return 0;
+  if (h >= 158) return 1;
+  if (h >= 138) return 2;
+  if (h >= 114) return 3;
   return 4;
 };
 
