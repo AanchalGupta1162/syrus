@@ -87,7 +87,8 @@
 .team-title-stack {
   display: none;
   width: 10.9em;
-  font-size: min(48px, calc(100cqw / 10.9));
+  /* 10.9em fills the width at cqw/10.9; a a larger divisor leaves breathing room. */
+  font-size: clamp(16px, calc(100cqw / 14), 30px);
 }
 
 .team-accent {
@@ -385,6 +386,13 @@
 @media (max-width: 760px) {
   .team-wrap {
     padding: 0 16px;
+  }
+  .team-hero {
+    padding: 56px 0 36px;
+  }
+  /* Sit flush with the headers below instead of floating in the middle. */
+  .team-hero-inner {
+    justify-content: flex-start;
   }
   .team-title-line {
     display: none;
