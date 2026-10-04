@@ -120,27 +120,108 @@
 }
 
 .slotViewport {
-  display: inline-block;
-  width: 4.1em;
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
   height: 1.32em;
   line-height: 1.32em;
-  perspective: 700px;
-  text-align: center;
   vertical-align: baseline;
 }
 
-.slotText {
-  display: inline-block;
-  white-space: nowrap;
-  color: var(--syrus-yellow);
-  backface-visibility: hidden;
+/* One reel per letter: a window one letter tall over a tall strip of letters. */
+.reel {
+  display: block;
+  width: 0.82em;
+  height: 1.32em;
+  overflow: hidden;
+  text-align: center;
+  -webkit-mask-image: linear-gradient(transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(transparent 0%, #000 14%, #000 86%, transparent 100%);
+}
+
+.reelStrip {
+  display: block;
+  will-change: transform;
+}
+
+.reelCell {
+  display: block;
+  height: 1.32em;
   line-height: 1.32em;
-  transform-origin: center center;
-  will-change: transform, opacity;
+  color: var(--syrus-yellow);
+}
+
+/* Yoda sits in the fifth slot (its space is held from the start, so nothing shifts),
+   pops in once CODE has landed, then winks. */
+.yoda {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.82em;
+  height: 1.32em;
+  opacity: 0;
+  transform: scale(0.3) rotate(-14deg);
+  transform-origin: 50% 70%;
+  transition: opacity 0.15s ease, transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.yoda svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.yodaOn {
+  opacity: 1;
+  transform: none;
+}
+
+.winkArc {
+  opacity: 0;
+}
+
+/* A cheeky wink soon after he appears, then again every few seconds. */
+.yodaOn .eyeR {
+  animation: yodaEye 4s ease-in-out 0.4s infinite;
+}
+
+.yodaOn .winkArc {
+  animation: yodaArc 4s ease-in-out 0.4s infinite;
+}
+
+@keyframes yodaEye {
+  0%,
+  8%,
+  30%,
+  100% {
+    opacity: 1;
+  }
+  12%,
+  26% {
+    opacity: 0;
+  }
+}
+
+@keyframes yodaArc {
+  0%,
+  8%,
+  30%,
+  100% {
+    opacity: 0;
+  }
+  12%,
+  26% {
+    opacity: 1;
+  }
 }
 
 /* No scroll animation: a plain block showing the finished quote. */
 @media (prefers-reduced-motion: reduce) {
+  .yoda {
+    display: none;
+  }
+
   .track {
     height: auto;
     padding-block: var(--syrus-section-y);

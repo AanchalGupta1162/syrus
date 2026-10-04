@@ -15,13 +15,13 @@ import styles from "./ForceQuote.module.css";
  *
  * Scroll progress p (0..1) is eased with an exponential follower (same idea as
  * the intro). The complete quote holds before a further scroll spins FORCE
- * into CODE, then the quote rushes away.
+ * into CODE like a slot machine, then the quote rushes away.
  *
  *   0.02 – 0.15  a blade of light draws across the screen
  *   0.13 – 0.27  the blade splits open and reveals the quote, from the middle out
  *   0.08 – 0.30  the six words land one after another
  *   0.30 – 0.62  hold on the complete quote
- *   0.62 – 0.84  the FORCE word spins vertically into CODE
+ *   0.60 – 0.84  the FORCE word spins like a slot machine and lands on CODE, Yoda winks
  *   0.88 – 1.00  the quote rushes toward the viewer and gives way to the FAQ
  *
  * With prefers-reduced-motion the section is a normal block showing the final
@@ -32,6 +32,21 @@ const LINES = [
   ["may", "the", "force"],
   ["be", "with", "you"],
 ];
+// The FORCE word is a slot machine: one reel per letter, each spinning through
+// random letters and stopping (left to right) on C, O, D, E. CODE is a letter
+// shorter, so the last reel stops on a blank, which Yoda then fills.
+const SLOT_FROM = "force";
+const SLOT_TO = "code ";
+const REEL_ROW = 1.32; // em, one letter's height (matches .reelCell in the css)
+const REELS = SLOT_FROM.split("").map((from, i) => {
+  // A fixed pseudo-random run of letters per reel, so renders never differ.
+  let seed = 17 + i * 31;
+  const fill = Array.from({ length: 10 + i * 3 }, () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return "abcdefghijklmnopqrstuvwxyz"[seed % 26];
+  });
+  return [from, ...fill, SLOT_TO[i]];
+});
 const FOLLOW_RATE = 8;
 /**
  * How much of the neighbouring sections the stage overlaps:
@@ -41,7 +56,8 @@ const OVERLAP_TRACKS = 0.5;
 const OVERLAP_FAQ = 0.5;
 const WARP_PEAK = 0.6;
 const QUOTE_HOLD_END = 0.58;
-const SLOT_START = 0.62;
+// The slot spin is driven by scroll, after the quote has held for a while.
+const SLOT_START = 0.6;
 const SLOT_END = 0.84;
 const EXIT_START = 0.88;
 
@@ -51,6 +67,42 @@ const ease = (t) => t * t * (3 - 2 * t);
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const lerp = (a, b, t) => a + (b - a) * t;
 
+// A baby-Yoda style face for the slot the shorter word frees up. The right eye winks
+// (see the css): the dark eye gives way to a happy arc.
+function YodaFace() {
+  return (
+    <svg viewBox="0 0 120 100" aria-hidden="true" focusable="false">
+      <path d="M33 58 Q14 40 3 50 Q4 70 30 74 Z" fill="#a9d08b" />
+      <path d="M87 58 Q106 40 117 50 Q116 70 90 74 Z" fill="#a9d08b" />
+      <path d="M31 60 Q17 49 10 54 Q12 66 30 70 Z" fill="#e3b9a2" />
+      <path d="M89 60 Q103 49 110 54 Q108 66 90 70 Z" fill="#e3b9a2" />
+      <ellipse cx="60" cy="58" rx="31" ry="29" fill="#bfe09f" />
+      <path d="M52 30 Q55 24 58 30 M62 30 Q66 23 69 30" fill="none" stroke="#8fb872" strokeWidth="2.4" strokeLinecap="round" />
+      <ellipse cx="39" cy="69" rx="6" ry="4" fill="#f0a6a0" opacity="0.5" />
+      <ellipse cx="81" cy="69" rx="6" ry="4" fill="#f0a6a0" opacity="0.5" />
+      <g>
+        <circle cx="47" cy="58" r="8" fill="#1f1a14" />
+        <circle cx="44.6" cy="55.2" r="2.6" fill="#fff" />
+        <circle cx="49.6" cy="60.8" r="1.2" fill="#fff" />
+      </g>
+      <g className={styles.eyeR}>
+        <circle cx="73" cy="58" r="8" fill="#1f1a14" />
+        <circle cx="70.6" cy="55.2" r="2.6" fill="#fff" />
+        <circle cx="75.6" cy="60.8" r="1.2" fill="#fff" />
+      </g>
+      <path
+        className={styles.winkArc}
+        d="M65 60 Q73 51 81 60"
+        fill="none"
+        stroke="#1f1a14"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+      />
+      <path d="M54 72 Q60 78 66 72" fill="none" stroke="#6d8f55" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function ForceQuote() {
   const trackRef = useRef(null);
   const contentRef = useRef(null);
@@ -59,7 +111,8 @@ export default function ForceQuote() {
   const glowRef = useRef(null);
   const scrimRef = useRef(null);
   const wordRefs = useRef([]);
-  const slotTextRef = useRef(null);
+  const reelRefs = useRef([]);
+  const yodaRef = useRef(null);
   const forceLabelRef = useRef(null);
 
   useEffect(() => {
@@ -88,9 +141,19 @@ export default function ForceQuote() {
       target = clamp(-r.top / total);
     };
 
+    // The slot machine: each reel's letters scroll with the page.
+    const renderSlot = (v) => {
+      REELS.forEach((strip, r) => {
+        const reel = reelRefs.current[r];
+        if (!reel) return;
+        const done = easeOut(seg(v, r * 0.07, 0.62 + r * 0.09));
+        reel.style.transform = `translate3d(0, ${-done * (strip.length - 1) * REEL_ROW}em, 0)`;
+      });
+      // Yoda takes the fifth slot once CODE has landed, then winks.
+      yodaRef.current?.classList.toggle(styles.yodaOn, v >= 0.8);
+    };
     const apply = (p) => {
       const intro = Math.min(p / QUOTE_HOLD_END, 1);
-      const slot = reduceMotion ? 0 : easeOut(seg(p, SLOT_START, SLOT_END));
       const exit = ease(seg(p, EXIT_START, 1));
 
       // Blade: draws out from the middle, splits open, then settles to a thin divider.
@@ -118,25 +181,11 @@ export default function ForceQuote() {
         el.style.transform = `translate3d(0, ${(1 - w) * 34}px, 0) scale(${1 + (1 - w) * 0.22})`;
       });
 
-      const slotText = slotTextRef.current;
-      const slotActive = p >= SLOT_START && p <= SLOT_END;
-      const showingCode = p > SLOT_END || (p >= SLOT_START && slot >= 0.5);
-      if (slotText) {
-        slotText.textContent = showingCode ? "code" : "force";
-
-        if (slotActive) {
-          const turn = slot < 0.5 ? -slot * 180 : (1 - slot) * 180;
-          const visibility = Math.min(1, Math.abs(0.5 - slot) * 10);
-          slotText.style.transform = `translate3d(0, ${Math.sin(slot * Math.PI) * -0.25}em, 0) rotateX(${turn}deg)`;
-          slotText.style.opacity = String(visibility);
-        } else {
-          slotText.style.transform = "none";
-          slotText.style.opacity = "1";
-        }
-      }
+      const slotSpin = reduceMotion ? 0 : seg(p, SLOT_START, SLOT_END);
+      renderSlot(slotSpin);
       forceLabelRef.current?.setAttribute(
         "aria-label",
-        showingCode ? "CODE" : "FORCE",
+        slotSpin >= 0.6 ? "CODE" : "FORCE",
       );
 
       // Hold the completed quote for the slot reel, then rush toward the viewer.
@@ -248,8 +297,27 @@ export default function ForceQuote() {
                       >
                         {isForce ? (
                           <span className={styles.slotViewport} aria-hidden="true">
-                            <span ref={slotTextRef} className={styles.slotText}>
-                              force
+                            {REELS.map((strip, r) => (
+                              <span
+                                key={r}
+                                className={styles.reel}
+                              >
+                                <span
+                                  ref={(el) => {
+                                    reelRefs.current[r] = el;
+                                  }}
+                                  className={styles.reelStrip}
+                                >
+                                  {strip.map((ch, k) => (
+                                    <span key={k} className={styles.reelCell}>
+                                      {ch}
+                                    </span>
+                                  ))}
+                                </span>
+                              </span>
+                            ))}
+                            <span ref={yodaRef} className={styles.yoda}>
+                              <YodaFace />
                             </span>
                           </span>
                         ) : (
