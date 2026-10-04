@@ -1,0 +1,395 @@
+/* Top bar: logo left, action buttons right (menu button is fixed on top of it) */
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: var(--syrus-nav-h);
+  background: rgba(var(--syrus-void-rgb), 0.92);
+  border-bottom: 1px solid var(--syrus-seam);
+  transform: translate3d(0, -100%, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.5s var(--syrus-ease-scan), opacity 0.4s ease;
+}
+
+.barOn {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.inner {
+  height: 100%;
+  max-width: var(--syrus-nav-max);
+  margin: 0 auto;
+  padding-inline: var(--syrus-nav-gutter);
+  /* room for the fixed menu button */
+  padding-right: calc(var(--syrus-nav-gutter) + 112px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.logo {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--syrus-font-primary);
+  font-size: 1.55rem;
+  line-height: 1;
+  color: var(--syrus-yellow);
+  text-shadow: 0 0 10px rgba(var(--syrus-yellow-rgb), 0.3);
+}
+
+.actions {
+  display: flex;
+}
+
+/* Menu button: fixed top-right, aligned with the navbar's right edge */
+:global(.syrus-page) button.menuBtn {
+  --cut: 8px;
+  position: fixed;
+  top: calc((var(--syrus-nav-h) - 42px) / 2);
+  right: max(
+    var(--syrus-nav-gutter),
+    calc((100vw - var(--syrus-nav-max)) / 2 + var(--syrus-nav-gutter))
+  );
+  z-index: 60;
+  min-height: 42px;
+  padding: 0 16px;
+  font-size: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, -8px, 0);
+  transition: opacity 0.4s ease, transform 0.4s var(--syrus-ease-scan),
+    color 0.2s ease, background-color 0.2s ease;
+}
+
+:global(.syrus-page) button.menuBtnOn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.menuIcon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+/* Full-screen menu */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  background: rgba(var(--syrus-void-rgb), 0.97);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+  overflow-y: auto;
+}
+
+.overlayOpen {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.overlayTop {
+  flex: none;
+  height: var(--syrus-nav-h);
+  max-width: var(--syrus-nav-max);
+  width: 100%;
+  margin: 0 auto;
+  padding-inline: var(--syrus-nav-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--syrus-seam);
+  position: relative;
+}
+
+.overlayTitle {
+  font-family: var(--syrus-font-primary);
+  font-size: 1.55rem;
+  line-height: 1;
+  color: var(--syrus-yellow);
+}
+
+/* The close button reuses menuBtn styles but sits inside the overlay bar */
+:global(.syrus-page) button.menuBtn.closeBtn {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.hyperspace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.overlayTop {
+  background: transparent;
+}
+
+/* Saber dial: the blade turns on its hilt and points at links on an arc */
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.pivot {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.tick {
+  position: absolute;
+  top: -1px;
+  height: 2px;
+  border-radius: 1px;
+  transition: background 0.25s ease, box-shadow 0.25s ease, opacity 0.3s ease;
+}
+
+.hiltPart {
+  position: absolute;
+}
+
+.hilt0 {
+  border-radius: 2px 0 0 2px;
+  background: #4a4f59;
+}
+
+.hilt1 {
+  border-radius: 1px;
+  background: linear-gradient(180deg, #5a5e66, #c9ccd2 45%, #6b6f78);
+}
+
+.hilt2 {
+  background: repeating-linear-gradient(90deg, rgba(4, 5, 10, 0.55) 0 2px, rgba(0, 0, 0, 0) 2px 4px);
+}
+
+.hilt3 {
+  border-radius: 2px 3px 3px 2px;
+  background: linear-gradient(180deg, #6b6f78, #e2e4e8 45%, #7b7f88);
+}
+
+.core,
+.glow {
+  position: absolute;
+  left: 0;
+}
+
+.core {
+  top: -2px;
+  height: 4px;
+  border-radius: 2px 3px 3px 2px;
+  background: #fffef5;
+  box-shadow: 0 0 2px 1px #fffbe0, 0 0 8px 2px rgba(var(--syrus-yellow-rgb), 0.9),
+    0 0 30px 7px rgba(var(--syrus-yellow-rgb), 0.26);
+  animation: saberHum 0.42s ease-in-out infinite alternate;
+}
+
+.glow {
+  border-radius: 3px;
+}
+
+.glowTight {
+  top: -2px;
+  height: 4px;
+  background: #fff3a0;
+  box-shadow: 0 0 16px 5px rgba(var(--syrus-yellow-rgb), 0.5);
+}
+
+.glowWide {
+  top: -3px;
+  height: 6px;
+  background: var(--syrus-yellow);
+  box-shadow: 0 0 22px 8px rgba(var(--syrus-yellow-rgb), 0.45);
+}
+
+@keyframes saberHum {
+  from {
+    filter: brightness(0.95);
+  }
+  to {
+    filter: brightness(1.07);
+  }
+}
+
+.tip {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0, rgba(255, 240, 140, 0.85) 25%, rgba(var(--syrus-yellow-rgb), 0) 70%);
+  pointer-events: none;
+}
+
+.nav {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.item {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: calc(18px * var(--k, 1));
+  padding: 0 calc(40px * var(--k, 1)) 0 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: #b9b4a6;
+  cursor: pointer;
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.itemOn {
+  color: var(--syrus-yellow);
+}
+
+.num {
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: var(--syrus-holo);
+  transition: color 0.25s ease;
+}
+
+.itemOn .num {
+  color: var(--syrus-yellow);
+}
+
+.itemLabel {
+  font-weight: 700;
+  font-size: calc(44px * var(--k, 1));
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 0.25s ease, text-shadow 0.25s ease;
+}
+
+.itemOn .itemLabel {
+  text-shadow: 0 0 22px rgba(var(--syrus-yellow-rgb), 0.42);
+}
+
+.overlayActions {
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+.cta {
+  display: none;
+}
+
+.burger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.burger span {
+  width: 16px;
+  height: 2px;
+  background: currentColor;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menuBtn:hover .burgerMid,
+.menuBtn:focus-visible .burgerMid {
+  background: #fffbe0;
+  box-shadow: 0 0 6px 1px var(--syrus-yellow);
+}
+
+@media (max-width: 560px) {
+  .inner {
+    padding-right: calc(var(--syrus-nav-gutter) + 52px);
+  }
+
+  :global(.syrus-page) button.menuBtn {
+    width: 44px;
+    min-height: 44px;
+    top: calc((var(--syrus-nav-h) - 44px) / 2);
+    padding: 0;
+  }
+
+  .menuLabel {
+    display: none;
+  }
+
+  /* touch: no hover, so the saber-lit middle bar is always on */
+  .burger {
+    gap: 5px;
+  }
+
+  .burger span {
+    width: 18px;
+  }
+
+  .burgerMid {
+    background: #fffbe0;
+    box-shadow: 0 0 6px 1px var(--syrus-yellow);
+  }
+
+  .item {
+    padding-right: 8px;
+  }
+
+  .itemLabel {
+    font-size: calc(22px * var(--k, 1));
+  }
+
+  .overlayActions {
+    display: none;
+  }
+
+  .cta {
+    display: block;
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: calc(28px + env(safe-area-inset-bottom));
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .ctaOn {
+    opacity: 1;
+    transform: none;
+    transition-delay: 1.3s;
+  }
+
+  .logo {
+    font-size: 1.35rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .menuBtn,
+  .overlay,
+  .item,
+  .tick,
+  .core {
+    transition: none;
+    animation: none;
+  }
+}

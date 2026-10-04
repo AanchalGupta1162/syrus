@@ -1,0 +1,86 @@
+.viewer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.host {
+  position: absolute;
+  inset: 0;
+}
+
+.hint,
+.loading {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--syrus-dim);
+  pointer-events: none;
+}
+
+.loading i {
+  width: 7px;
+  height: 7px;
+  background: var(--syrus-yellow);
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--syrus-dim);
+}
+
+.fallback p {
+  margin: 0;
+  max-width: 34ch;
+}
+
+:global(.syrus-page) .fallback button {
+  min-height: 44px;
+  padding: 0 20px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--syrus-holo);
+  background: transparent;
+  border: 1px solid rgba(var(--syrus-holo-rgb), 0.5);
+  cursor: pointer;
+}
+
+:global(.syrus-page) .fallback button:hover,
+:global(.syrus-page) .fallback button:focus-visible {
+  background: rgba(var(--syrus-holo-rgb), 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .label,
+  .loading i {
+    animation: none;
+  }
+}

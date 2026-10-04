@@ -1,0 +1,9 @@
+# Git LFS: large binary assets are stored as LFS pointers instead of normal blobs.
+# Rules are scoped to specific folders so files already committed elsewhere in
+# the repo are not touched.
+
+# Syrus 7.0 timeline: 10 build-step starship models (~7.5 MB total)
+public/spaceship-3d-models/*.glb filter=lfs diff=lfs merge=lfs -text
+
+# Previous Syrus theme model (file removed, rule kept so old history still resolves)
+public/StarWars/millennium_falcon.glb filter=lfs diff=lfs merge=lfs -text

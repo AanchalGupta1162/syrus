@@ -1,147 +1,420 @@
+/* Team page, pixel theme (matches the home page: navy + #f6c31c, Press Start 2P). */
+
 #team {
-  width: 100vw;
-  height: 100vh;
-  background-size: 30px 30px;
-  background-image: radial-gradient(
-    circle,
-    var(--primary) 1px,
-    var(--secondary) 1px
-  );
-  padding: 0;
-  margin: 0;
-  /* filter: blur(1px); */
-  font-family: "Outfit", sans-serif;
-  font-weight: 800;
-  overflow-x: hidden;
+  min-height: 100vh;
+  overflow-x: clip;
+  background-color: var(--secondary);
+  background-image: radial-gradient(#f6c31c38 1px, transparent 1.2px);
+  background-position: -11px -11px;
+  background-size: 24px 24px;
+  color: #fff;
+  font-family: "Noto Sans", sans-serif;
 }
 
-.meet-the-team {
-  font-family: "Outfit", sans-serif;
-  padding-top: 1rem;
-  color: white;
-  font-size: clamp(2rem, 9vw, 4rem);
+.team-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ---------- Hero ---------- */
+
+.team-hero {
+  position: relative;
+  padding: 104px 0 72px;
+}
+
+.team-matrix {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 25%, #000 60%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 25%, #000 60%, transparent 100%);
+}
+
+.team-matrix-col {
+  flex: none;
+  width: 22px;
+  font-family: ui-monospace, monospace;
+  font-size: 18px;
+  line-height: 22px;
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  font-weight: 500;
-  backdrop-filter: blur(1px);
+  white-space: pre-line;
 }
 
-.meet-the-team span {
-  /* margin-top: 0.5%;
-  display: flex; */
-  /* font-size: clamp(2.6rem, 2.6vw, 4rem); */
-  /* text-align: center;
-  padding-inline: 1.75vw;
-  font-family: "Outfit", sans-serif; */
+.team-matrix-col.shade-a {
+  color: #816710;
+  opacity: 0.35;
+}
+
+.team-matrix-col.shade-b {
+  color: #53430a;
+  opacity: 0.6;
+}
+
+.team-matrix-col.shade-c {
   color: var(--primary);
-  font-weight: 1000;
+  opacity: 0.22;
 }
 
-.team-section {
+.team-hero-inner {
+  position: relative;
   display: flex;
-  padding: 2rem;
   justify-content: center;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  backdrop-filter: blur(1px);
-  background: transparent !important;
-  border: none !important;
-}
-
-.team-wrapper {
-  height: fit-content;
-  max-width: 100rem;
-  width: 70vw;
+  container-type: inline-size;
 }
 
 .team-title {
-  text-align: center;
-  padding: 1.2rem;
-  /* padding-inline: 3rem; */
-  border: 1px solid var(--primary);
-  border-radius: 25px;
-  background: var(--secondary);
-  color: white;
+  margin: 0;
+  color: #fff;
+  font-family: "Press Start 2P", sans-serif;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+/* The line is sized from the content width so it spans exactly as wide as the
+   group headers below (24 characters + cursor = 24.9em). */
+.team-title-line {
+  width: 24.9em;
+  font-size: calc((min(100vw, 1280px) - 96px) / 24.9);
+  font-size: calc(100cqw / 24.9);
+  white-space: nowrap;
+}
+
+.team-title-stack {
+  display: none;
+  width: 10.9em;
+  font-size: min(48px, calc(100cqw / 10.9));
+}
+
+.team-accent {
+  color: var(--primary);
+}
+
+.team-tline {
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-weight: 800;
+  white-space: nowrap;
 }
 
-.team-title .accordion-button {
-  background-color: inherit;
-  color: white;
-  font-family: "Noto Sans";
-  font-size: 1.2rem;
-  font-weight: 600;
-  box-shadow: none !important;
+/* Typewriter: Press Start 2P glyphs are 1em wide, so width grows one letter per step. */
+.team-type {
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.team-title .accordion-button:focus {
-  box-shadow: none !important;
+.team-type-line {
+  animation: teamType24 1s steps(24) 0.15s forwards;
 }
 
-.team-title .accordion-button::after {
-  background-size: 20px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' fill='%23f6c31c' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3E%3C/svg%3E");
+.team-type-1 {
+  animation: teamType8 0.4s steps(8) 0.15s forwards;
 }
+
+.team-type-2 {
+  animation: teamType10 0.5s steps(10) 0.65s forwards;
+}
+
+.team-type-3 {
+  animation: teamType4 0.2s steps(4) 1.25s forwards;
+}
+
+.team-cursor {
+  display: inline-block;
+  flex: none;
+  width: 0.62em;
+  height: 0.9em;
+  margin-left: 0.18em;
+  background: var(--primary);
+  box-shadow: 0 0 12px rgba(246, 195, 28, 0.55);
+  opacity: 0;
+}
+
+.team-cursor-line {
+  animation:
+    teamCursorOn 0.15s steps(1) forwards,
+    teamBlink 0.9s steps(1) 1.35s infinite;
+}
+
+.team-cursor-1 {
+  animation: teamCursor1 0.65s steps(1) forwards;
+}
+
+.team-cursor-2 {
+  animation: teamCursor2 1.25s steps(1) forwards;
+}
+
+.team-cursor-3 {
+  animation:
+    teamCursorOn 1.25s steps(1) forwards,
+    teamBlink 0.9s steps(1) 1.55s infinite;
+}
+
+@keyframes teamType24 {
+  to {
+    width: 24em;
+  }
+}
+
+@keyframes teamType8 {
+  to {
+    width: 8em;
+  }
+}
+
+@keyframes teamType10 {
+  to {
+    width: 10em;
+  }
+}
+
+@keyframes teamType4 {
+  to {
+    width: 4em;
+  }
+}
+
+@keyframes teamCursorOn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes teamCursor1 {
+  0% {
+    opacity: 0;
+  }
+  23% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes teamCursor2 {
+  0% {
+    opacity: 0;
+  }
+  52% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes teamBlink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Groups (one open at a time) ---------- */
+
+.team-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* Collapsing panels shouldn't make the browser shift the scroll position. */
+  overflow-anchor: none;
+  padding-top: 24px;
+  padding-bottom: 112px;
+}
+
+.team-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-acc {
+  display: block;
+  margin: 0;
+  transition:
+    transform 0.12s steps(2),
+    filter 0.12s steps(2);
+}
+
+.team-acc:hover,
+.team-acc:focus-within {
+  transform: translate(-3px, -3px);
+  filter: drop-shadow(3px 3px 0 var(--primary));
+}
+
+.team-acc-frame {
+  display: block;
+  padding: 2px;
+  background: var(--primary-alpha);
+}
+
+.team-acc-frame,
+.team-acc-btn {
+  clip-path: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px));
+}
+
+.team-acc:hover .team-acc-frame,
+.team-acc:focus-within .team-acc-frame,
+.team-acc.is-open .team-acc-frame {
+  background: var(--primary);
+}
+
+.team-acc-btn {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  min-height: 64px;
+  padding: 20px 24px;
+  border: 0;
+  border-radius: 0;
+  background: var(--secondary);
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+
+.team-acc-title {
+  margin: 0;
+  font-family: "Press Start 2P", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.team-acc.is-open .team-acc-title {
+  color: var(--primary);
+}
+
+.team-acc-dash {
+  flex: 1 1 auto;
+  min-width: 24px;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, var(--primary-alpha) 0 8px, transparent 8px 16px);
+}
+
+.team-acc-chev {
+  flex: none;
+  width: 16px;
+  height: 12px;
+  fill: var(--primary);
+  shape-rendering: crispEdges;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.team-acc.is-open .team-acc-chev {
+  transform: rotate(180deg);
+}
+
+/* Smooth open/close: the row animates from 0fr to 1fr, content fades and slides in. */
+.team-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 0.45s;
+}
+
+.team-panel.is-open {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 0s;
+}
+
+.team-panel-inner {
+  min-height: 0;
+  margin: 0 -8px;
+  padding: 0 8px;
+  overflow: hidden;
+}
+
+.team-panel-body {
+  padding-top: 36px;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.team-panel.is-open .team-panel-body {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.35s ease 0.1s,
+    transform 0.45s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
+}
+
+/* ---------- Cards (centred rows) ---------- */
 
 .team-cards {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
   justify-content: center;
-  font-weight: 700;
+  gap: 28px;
+  padding: 8px 0 24px;
 }
 
-.team-card-container {
-  width: 300px;
+.team-cards .team-card {
+  width: 220px;
 }
 
-.team-cards-wrapper {
-  width: 100%;
-  height: fit-content;
+/* Faculty: up to 300px, shrinking so all three stay on one row on tablets. */
+.team-cards.is-large .team-card {
+  width: min(300px, calc((100% - 2 * 28px) / 3));
 }
 
-.team-cards .card-container:hover {
-  transform: scale(1.05);
-}
+/* ---------- Phones ---------- */
 
-.te-members > .team-title img {
-  width: 4rem;
-}
-
-/* @media screen and (max-width: 1389px) {
-  .faculty .team-cards {
-    flex-direction: column !important;
+@media (max-width: 760px) {
+  .team-wrap {
+    padding: 0 16px;
   }
-} */
-
-@media screen and (max-width: 1325px) {
-  .faculty > .team-cards {
-    max-width: 885px;
+  .team-title-line {
+    display: none;
+  }
+  .team-title-stack {
+    display: block;
+  }
+  .team-acc-title {
+    font-size: 11px;
+    white-space: normal;
+  }
+  .team-acc-btn {
+    gap: 12px;
+    min-height: 56px;
+    padding: 16px 14px;
+  }
+  .team-cards {
+    gap: 16px;
+  }
+  .team-cards .team-card,
+  .team-cards.is-large .team-card {
+    width: calc(50% - 8px);
   }
 }
 
-@media screen and (max-width: 490px) {
-  .team-title span {
-    font-size: 1.2rem;
-  }
-  .meet-the-team {
-    font-size: clamp(2rem, 10vw, 5rem);
-  }
-}
-
-@media screen and (max-width: 420px) {
-  .team-section {
-    padding: 1rem;
-  }
-  .team-wrapper {
-    width: 90vw;
+@media (prefers-reduced-motion: reduce) {
+  .team-acc,
+  .team-acc-chev,
+  .team-panel,
+  .team-panel-body {
+    transition: none;
   }
 }
