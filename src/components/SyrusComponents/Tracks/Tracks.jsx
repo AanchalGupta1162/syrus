@@ -4,36 +4,31 @@ import tracks from "../../../assets/data/tracks";
 import styles from "./Tracks.module.css";
 
 export default function Tracks() {
-  const [replayCount, setReplayCount] = useState(0);
   const [tracedCards, setTracedCards] = useState(() => new Set());
 
   return (
     <section
       id="tracks"
-      className="syrus-section"
+      className={`syrus-section ${styles.section}`}
       aria-labelledby="tracks-title"
     >
-      <div className="syrus-container">
+      <div className={`syrus-container ${styles.layout}`}>
+        <img
+          src="/syrus-characters/Yoda.png"
+          alt=""
+          aria-hidden="true"
+          className={styles.character}
+          loading="lazy"
+        />
         <div className={styles.headingRow}>
           <SectionHeading id="tracks-title">domain</SectionHeading>
-          <button
-            className={styles.replay}
-            type="button"
-            aria-controls="tracks-grid"
-            onClick={() => {
-              setTracedCards(new Set());
-              setReplayCount((count) => count + 1);
-            }}
-          >
-            Replay
-          </button>
         </div>
 
         <ul id="tracks-grid" className={styles.grid}>
           {tracks.map((t, i) => (
             <li
               key={t.id}
-              className={`syrus-panel ${styles.card} ${replayCount ? "is-in" : ""}`}
+              className={`syrus-panel ${styles.card}`}
               data-reveal
               data-traced={tracedCards.has(t.id)}
               onMouseLeave={() =>
@@ -45,7 +40,6 @@ export default function Tracks() {
               }}
             >
               <svg
-                key={replayCount}
                 className={styles.edge}
                 viewBox="0 0 565 300"
                 preserveAspectRatio="none"

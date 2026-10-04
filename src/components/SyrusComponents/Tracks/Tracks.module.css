@@ -1,36 +1,14 @@
+.section {
+  overflow: hidden;
+}
+
+.layout {
+  position: relative;
+}
+
 .headingRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.replay {
-  flex: 0 0 auto;
-  min-height: 36px;
-  margin-top: 8px;
-  padding: 0 14px;
-  border: 1px solid var(--syrus-seam);
-  background: transparent;
-  color: var(--syrus-holo);
-  font-family: var(--syrus-font-text);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-}
-
-.replay:hover {
-  border-color: var(--syrus-yellow);
-  background: rgba(var(--syrus-yellow-rgb), 0.08);
-  color: var(--syrus-yellow);
-}
-
-.replay:focus-visible {
-  outline: 2px solid var(--syrus-holo);
-  outline-offset: 3px;
+  position: relative;
+  z-index: 1;
 }
 
 .grid {
@@ -38,9 +16,28 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: min(553px, 100%);
+  grid-template-columns: 1fr;
   grid-auto-rows: minmax(300px, auto);
   gap: clamp(14px, 2vw, 22px);
+  position: relative;
+  z-index: 1;
+}
+
+.character {
+  position: absolute;
+  right: var(--syrus-gutter);
+  top: calc(clamp(2.1rem, 6.72vw, 3.9375rem) + 27px + clamp(32px, 5vw, 56px));
+  height: min(650px, 55vw);
+  width: auto;
+  object-fit: contain;
+  opacity: 0.7;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  filter: drop-shadow(0 0 8px rgba(95, 212, 240, 0.15));
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10%);
 }
 
 .card {
@@ -101,7 +98,8 @@
   opacity: 0.22;
 }
 
-.card:hover .edgeBlade {
+.card:hover .edgeBlade,
+.card:global(.is-in):hover .edgeBlade {
   animation: edgeRelight 0.6s cubic-bezier(0.7, 0, 0.2, 1) both;
 }
 
@@ -187,7 +185,7 @@
 
 :global(.syrus-page) a.cta {
   min-height: 44px;
-  padding-inline: 18px;
+  padding-inline: 12px;
   font-size: 0.6875rem;
 }
 
@@ -244,18 +242,27 @@
   }
 }
 
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .character {
+    height: min(420px, 40vw);
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1023px) {
+  .character {
+    height: min(300px, 33vw);
+  }
+}
+
+@media (max-width: 899px) {
+  .character {
+    display: none;
+  }
+}
+
 @media (max-width: 599px) {
   .grid {
     grid-template-columns: 1fr;
-  }
-
-  .headingRow {
-    gap: 12px;
-  }
-
-  .replay {
-    min-height: 32px;
-    padding-inline: 9px;
   }
 
   .body {
