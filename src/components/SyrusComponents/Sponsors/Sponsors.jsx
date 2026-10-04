@@ -46,7 +46,6 @@ const TIERS = [
     size: "sm",
     items: [
       { name: ".xyz", logo: "/sponsors/XYZ.webp" },
-      { name: "Interview Buddy", logo: "/sponsors/InterviewBuddy.webp" },
     ],
   },
   {
