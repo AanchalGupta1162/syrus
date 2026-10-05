@@ -35,9 +35,9 @@ const TIERS = [
     label: "Individual Sponsors",
     size: "md",
     items: [
+      { name: "Ranjeet Shetye", tag: "MD at Everstream Analytics", logo: "/sponsors/RanjeetSir.webp", objectFit: "cover", objectPosition: "center 20%", imgScale: 1.2 },
       { name: "Santosh Gupta", tag: "ML Engineer at Meta", logo: "/sponsors/SantoshGuptaSir.webp", objectFit: "cover" },
       { name: "Vishal Chandwani", tag: "Senior Engineer at Microsoft", logo: "/sponsors/VishalSir.webp", objectFit: "cover" },
-      { name: "Ranjeet Shetye", tag: "MD at Everstream Analytics", logo: "/sponsors/RanjeetSir.webp", objectFit: "cover", objectPosition: "center 20%", imgScale: 1.2 },
     ],
   },
   {

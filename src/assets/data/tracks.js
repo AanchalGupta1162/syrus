@@ -12,7 +12,7 @@ const tracks = [
     id: "sustainability",
     title: "Sustainability",
     description:
-      "Engineer impactful solutions that make healthcare, agriculture, education, and smart mobility accessible, scalable, and sustainable for all.",
+      "Engineer impactful solutions that make healthcare, agriculture, education scalable and sustainable for all.",
     problemStatementsUrl: "https://docs.google.com/document/d/1asDBWLRKNXMqWcHOHEuc1A-8AT17EsI415rFtAnGxps/edit", // Add the document URL when it is available.
     Problems: "04" // Add the document URL when it is available.
   },
