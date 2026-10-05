@@ -86,7 +86,7 @@ export default function SyrusFooter() {
         </ul>
 
         <p className={styles.legal}>
-          © 2025-2026 CodeCell++ VESIT. All Rights Reserved.{" "}
+          © 2026-2027 CodeCell++ VESIT. All Rights Reserved.{" "}
           <span aria-hidden="true">|</span>{" "}
           <a href="/code-of-conduct">Code of Conduct</a>
         </p>
