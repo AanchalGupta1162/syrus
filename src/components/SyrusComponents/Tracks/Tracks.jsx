@@ -62,7 +62,7 @@ export default function Tracks() {
                 <h3 className={styles.title}>{t.title}</h3>
                 <p className={styles.desc}>{t.description}</p>
                 <div className={styles.cardFooter}>
-                  <span className={styles.problemCount}>04 problem statements</span>
+                  <span className={styles.problemCount}>{t.Problems} Problem Statements</span>
                   <a
                     className={`syrus-btn syrus-btn--ghost ${styles.cta}`}
                     href={t.problemStatementsUrl || undefined}
