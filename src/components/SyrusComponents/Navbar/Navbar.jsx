@@ -8,6 +8,7 @@ const MENU_ITEMS = [
   { id: "sponsors", label: "Sponsors" },
   { id: "prizepool", label: "Prize Pool" },
   { id: "timeline", label: "Timeline" },
+  { id: "workshop", label: "Workshop" },
   { id: "tracks", label: "Domain" },
   { id: "faq-section", label: "FAQs" },
   { id: "gallery", label: "Gallery" },
@@ -89,18 +90,18 @@ function Hyperspace({ open }) {
 /* ---- Saber dial ---------------------------------------------------- */
 
 const DIAL_DESKTOP = {
-  angles: [-44, -26, -9, 9, 26, 44],
+  angles: [-50, -33.3, -16.7, 0, 16.7, 33.3, 50],
   hilt: [[-78, 8, 10], [-70, 62, 14], [-60, 32, 14], [-10, 10, 18]],
   bladeLen: 290,
   tick: [304, 12],
-  rowH: 100,
+  rowH: 88,
 };
 const DIAL_MOBILE = {
-  angles: [-60, -36, -12, 12, 36, 60],
+  angles: [-66, -44, -22, 0, 22, 44, 66],
   hilt: [[-50, 6, 8], [-44, 38, 12], [-36, 20, 12], [-8, 8, 16]],
   bladeLen: 100,
   tick: [108, 9],
-  rowH: 48,
+  rowH: 42,
 };
 
 function clamp(v, lo, hi) {
@@ -310,7 +311,7 @@ export default function Navbar({ onCallMentor }) {
   const shown = lit && (phase === "sweep" || phase === "rest");
   const idx = phase === "rest" ? (geo.mobile ? active : hovered ?? active) : -1;
   const angle =
-    (phase === "sweep" ? angles[5] : phase === "rest" ? angles[idx] : angles[0]) + spin;
+    (phase === "sweep" ? angles[angles.length - 1] : phase === "rest" ? angles[idx] : angles[0]) + spin;
   const rotT = (extra) =>
     phase === "sweep"
       ? `transform ${0.9 + extra}s cubic-bezier(.45,0,.55,1)`
@@ -325,7 +326,7 @@ export default function Navbar({ onCallMentor }) {
   const clipT = lit
     ? "clip-path .5s cubic-bezier(0.16,1,0.3,1)"
     : "clip-path .32s cubic-bezier(0.7,0,0.84,0)";
-  const rowDelay = (i) => (phase === "sweep" ? `${120 + i * 150}ms` : "0ms");
+  const rowDelay = (i) => (phase === "sweep" ? `${120 + i * 130}ms` : "0ms");
   const [tickR, tickL] = geo.tick;
 
   return (
