@@ -66,6 +66,25 @@
   will-change: transform;
   transform: scale(1);
   transition: text-shadow 0.3s ease, transform 0.3s ease;
+  z-index: 2;
+}
+
+.amount::before,
+.amount::after {
+  content: "";
+  position: absolute;
+  inset: -0.12em -0.28em;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(95, 212, 240, 0.55);
+  transform: scaleX(0.54) scaleY(0.28);
+  filter: drop-shadow(0 0 14px rgba(95, 212, 240, 0.55));
+}
+
+.amount::after {
+  border-color: rgba(255, 232, 31, 0.72);
+  filter: drop-shadow(0 0 18px rgba(255, 232, 31, 0.6));
 }
 
 /* ── Numbers flicker at beats (₹50k, ₹70k) ── */
@@ -119,9 +138,17 @@
   }
 }
 
-/* ── Subtle glow on landing (₹1,00,000) ── */
+/* ── Hyperspace hit on landing (₹1,50,000) ── */
 .amountLanded {
-  animation: numLand 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: numLand 1.05s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.amountLanded::before {
+  animation: ringBlast 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.amountLanded::after {
+  animation: ringBlast 0.7s 0.12s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes numLand {
@@ -131,15 +158,34 @@
   }
 
   50% {
-    transform: scale(1.03);
+    transform: scale(1.08) rotate(-0.4deg);
     text-shadow:
-      rgba(255, 232, 31, 0.4) 0px 0px 40px,
-      rgba(255, 232, 31, 0.15) 0px 0px 70px;
+      rgb(255, 251, 224) 0px 0px 12px,
+      rgba(255, 232, 31, 0.92) 0px 0px 44px,
+      rgba(95, 212, 240, 0.5) 0px 0px 86px;
   }
 
   100% {
     transform: scale(1);
-    text-shadow: rgba(255, 232, 31, 0.28) 0px 0px 36px;
+    text-shadow:
+      rgba(255, 232, 31, 0.62) 0px 0px 36px,
+      rgba(95, 212, 240, 0.22) 0px 0px 70px;
+  }
+}
+
+@keyframes ringBlast {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.28) scaleY(0.12);
+  }
+
+  26% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleX(1.12) scaleY(0.62);
   }
 }
 
@@ -147,6 +193,112 @@
   font-size: 0.72em;
   font-weight: 600;
   color: rgb(233, 164, 21);
+}
+
+.plus {
+  display: inline-block;
+  width: 0.56em;
+  margin-left: 0.03em;
+  color: rgb(255, 232, 31);
+  opacity: 0;
+  transform: translateX(-0.18em) scale(0.18) rotate(-18deg);
+  transform-origin: center;
+  text-shadow: none;
+}
+
+.plusVisible {
+  animation: plusIgnite 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    plusHover 2s 0.9s ease-in-out infinite;
+}
+
+@keyframes plusIgnite {
+  0% {
+    opacity: 0;
+    transform: translateX(-0.18em) scale(0.18) rotate(-18deg);
+    filter: blur(3px);
+  }
+
+  36% {
+    opacity: 1;
+    transform: translateX(0) scale(1.34) rotate(8deg);
+    filter: blur(0);
+    text-shadow:
+      rgb(255, 251, 224) 0px 0px 14px,
+      rgba(255, 232, 31, 0.96) 0px 0px 36px,
+      rgba(255, 232, 31, 0.75) 0px 0px 66px;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(0deg);
+    filter: blur(0);
+    text-shadow:
+      rgba(255, 232, 31, 0.9) 0px 0px 30px,
+      rgba(255, 232, 31, 0.55) 0px 0px 54px;
+  }
+}
+
+@keyframes plusHover {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-0.035em) scale(1.04);
+  }
+}
+
+.hyperspace {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 18px);
+  width: min(720px, 96vw);
+  height: clamp(92px, 16vw, 156px);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.hyperspace span {
+  --angle: calc((var(--i) * 26deg) - 169deg);
+  --delay: calc(var(--i) * 0.025s);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(42px, 8vw, 92px);
+  height: 2px;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(95, 212, 240, 0),
+    rgba(95, 212, 240, 0.95),
+    rgba(255, 251, 224, 0)
+  );
+  transform: translate(-50%, -50%) rotate(var(--angle)) scaleX(0);
+  transform-origin: center;
+  filter: drop-shadow(0 0 10px rgba(95, 212, 240, 0.88));
+}
+
+.hyperspaceActive span {
+  animation: hyperspaceStreak 0.82s var(--delay) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes hyperspaceStreak {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) scaleX(0);
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateX(185px) scaleX(1.35);
+  }
 }
 
 /* ── Lightsaber container ── */
