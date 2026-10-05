@@ -3,11 +3,12 @@ import SectionHeading from "../SectionHeading/SectionHeading";
 import styles from "./PrizePool.module.css";
 
 const START = 10000;
-const TARGET = 100000;
-const STEP = 1000;
-const HOLDS = [50000, 70000]; // pause here for a beat
+const TARGET = 150000;
+const STEP = 2500;
+const HOLDS = [50000, 100000, 125000]; // pause here for a beat
 const TICK_MS = 20;
 const HOLD_MS = 500;
+const PLUS_DELAY_MS = 650;
 
 const fmt = (n) => n.toLocaleString("en-IN");
 
@@ -36,22 +37,29 @@ export default function PrizePool() {
   const [value, setValue] = useState(START);
   const [flickering, setFlickering] = useState(false);
   const [landed, setLanded] = useState(false);
+  const [showPlus, setShowPlus] = useState(false);
   const rafRef = useRef(0);
+  const flickerTimerRef = useRef(0);
+  const plusTimerRef = useRef(0);
 
   const progress = (value - START) / (TARGET - START);
 
   /* Flicker the NUMBERS at each beat */
   const triggerFlicker = useCallback(() => {
+    window.clearTimeout(flickerTimerRef.current);
     setFlickering(true);
-    setTimeout(() => setFlickering(false), HOLD_MS);
+    flickerTimerRef.current = window.setTimeout(() => setFlickering(false), HOLD_MS);
   }, []);
 
   /* Reset everything to start state */
   const reset = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
+    window.clearTimeout(flickerTimerRef.current);
+    window.clearTimeout(plusTimerRef.current);
     setValue(START);
     setFlickering(false);
     setLanded(false);
+    setShowPlus(false);
   }, []);
 
   /* Run the counting animation */
@@ -67,6 +75,9 @@ export default function PrizePool() {
 
         if (current >= TARGET) {
           setLanded(true);
+          plusTimerRef.current = window.setTimeout(() => {
+            setShowPlus(true);
+          }, PLUS_DELAY_MS);
           return;
         }
 
@@ -90,6 +101,7 @@ export default function PrizePool() {
     if (reduce || !("IntersectionObserver" in window)) {
       setValue(TARGET);
       setLanded(true);
+      setShowPlus(true);
       return undefined;
     }
 
@@ -115,6 +127,8 @@ export default function PrizePool() {
     return () => {
       io.disconnect();
       cancelAnimationFrame(rafRef.current);
+      window.clearTimeout(flickerTimerRef.current);
+      window.clearTimeout(plusTimerRef.current);
     };
   }, [run, reset]);
 
@@ -147,12 +161,27 @@ export default function PrizePool() {
         <div ref={ref} className={styles.wrap} data-reveal>
           <span className={styles.kicker}>Total worth of prizes</span>
 
-          <p className={amountClasses} aria-label="Rupees 1,00,000">
+          <p
+            className={amountClasses}
+            aria-label={`Rupees ${fmt(value)}${showPlus ? " plus" : ""}`}
+          >
             <span className={styles.currency} aria-hidden="true">
               ₹
             </span>
             <span aria-hidden="true">{fmt(value)}</span>
+            <span
+              className={`${styles.plus} ${showPlus ? styles.plusVisible : ""}`}
+              aria-hidden="true"
+            >
+              +
+            </span>
           </p>
+
+          <span className={`${styles.hyperspace} ${landed ? styles.hyperspaceActive : ""}`} aria-hidden="true">
+            {Array.from({ length: 14 }).map((_, index) => (
+              <span key={index} style={{ "--i": index }} />
+            ))}
+          </span>
 
           {/* ── Lightsaber ── */}
           <div className={styles.saberWrap} aria-hidden="true">
