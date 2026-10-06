@@ -6,7 +6,7 @@ const tracks = [
     description:
       "Harness Blockchain, Quantum Computing and Agentic AI to revolutionize trading, optimize financial portfolios, and build next-generation secure systems.",
     problemStatementsUrl: "https://docs.google.com/document/d/10QdKoCZ66eRqycdvhvo2G8lyIZYXZyLa4TOp-Iq0Dyk/",
-    Problems: "03" // Add the document URL when it is available.
+    Problems: "06" // Add the document URL when it is available.
   },
   {
     id: "sustainability",
@@ -14,7 +14,7 @@ const tracks = [
     description:
       "Engineer impactful solutions that make healthcare, agriculture, education scalable and sustainable for all.",
     problemStatementsUrl: "https://docs.google.com/document/d/1asDBWLRKNXMqWcHOHEuc1A-8AT17EsI415rFtAnGxps/edit", // Add the document URL when it is available.
-    Problems: "04" // Add the document URL when it is available.
+    Problems: "05" // Add the document URL when it is available.
   },
 ];
 
